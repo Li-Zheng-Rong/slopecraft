@@ -219,7 +219,7 @@ class _ImportPictureState extends State<ImportPicture> {
                                   type: FileType.custom,
                                   dialogTitle: '选择图片',
                                   lockParentWindow: true,
-                                  allowedExtensions: ['.png', '.bmp', '.jpeg', '.jpg', '.gif', '.tga', '.ico', '.webp', '.tiff']);
+                                  allowedExtensions: ['png', 'bmp', 'jpeg', 'jpg', 'gif', 'tga', 'ico', 'webp', 'tiff']);
                               //if user cancelled
                               if (result == null) return;
                               GKernel.instance.importImage(context, result.files.single.path.toString());

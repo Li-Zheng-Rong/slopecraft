@@ -241,8 +241,8 @@ class _ExportMapState extends State<ExportMap> {
                               }
                             }
                           }
-                          GKernel.instance.scl
-                              .SCL_exportAsData(selectedDirectory.toNativeUtf8().cast(), int.parse(GKernel.instance.mapIndex.text), nullptr, nullptr);
+                          print(path.current);
+                          GKernel.instance.scl.SCL_exportAsData('.'.toNativeUtf8().cast(), int.parse(GKernel.instance.mapIndex.text), nullptr, nullptr);
                         }),
                   ),
                 ),
