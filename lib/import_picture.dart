@@ -93,7 +93,7 @@ class _ImportPictureState extends State<ImportPicture> {
                     setState(() {
                       // _list.addAll(detail.files);
                       if (detail.files.length == 1) {
-                        if (['.png', '.bmp', '.jpeg', '.jpg', '.gif', '.tga', '.ico', '.webp', '.tiff'].contains(path.extension(detail.files[0].path))) {
+                        if (['.png', '.bmp', '.jpeg', '.jpg', '.tga', '.webp', '.tiff'].contains(path.extension(detail.files[0].path))) {
                           GKernel.instance.importImage(context, detail.files[0].path);
                         } else {
                           showDialog(
@@ -219,7 +219,7 @@ class _ImportPictureState extends State<ImportPicture> {
                                   type: FileType.custom,
                                   dialogTitle: '选择图片',
                                   lockParentWindow: true,
-                                  allowedExtensions: ['png', 'bmp', 'jpeg', 'jpg', 'gif', 'tga', 'ico', 'webp', 'tiff']);
+                                  allowedExtensions: ['png', 'bmp', 'jpeg', 'jpg', 'tga', 'webp', 'tiff']);
                               //if user cancelled
                               if (result == null) return;
                               GKernel.instance.importImage(context, result.files.single.path.toString());

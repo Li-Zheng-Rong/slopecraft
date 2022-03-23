@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart' as file_picker;
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path;
+import 'package:process_run/cmd_run.dart';
 
 import 'kernel.dart';
 import 'scl_interface.dart';
@@ -198,9 +199,12 @@ class _ExportMapState extends State<ExportMap> {
                     child: FilledButton(
                         child: const Text('导出！'),
                         onPressed: () async {
-                          String? selectedDirectory = await file_picker.FilePicker.platform.getDirectoryPath();
+                          String? outputFile = await file_picker.FilePicker.platform.saveFile(
+                            dialogTitle: '导出',
+                            fileName: 'map_${int.parse(GKernel.instance.mapIndex.text)}.dat',
+                          );
 
-                          if (selectedDirectory == null) {
+                          if (outputFile == null) {
                             return;
                           }
                           if (GKernel.instance.mapIndex.text.isEmpty) {
@@ -210,7 +214,7 @@ class _ExportMapState extends State<ExportMap> {
                           bool ignoreRewrite = false;
                           bool stop = false;
                           for (int i = indexStart; i <= indexStart + mapRows * mapCols - 1; i++) {
-                            if (File(path.join(selectedDirectory, 'map_$i.dat')).existsSync() && !ignoreRewrite) {
+                            if (File('map_$i.dat').existsSync() && !ignoreRewrite) {
                               await showDialog(
                                 builder: (context) {
                                   return ContentDialog(
@@ -241,7 +245,7 @@ class _ExportMapState extends State<ExportMap> {
                               }
                             }
                           }
-                          print(path.current);
+
                           GKernel.instance.scl.SCL_exportAsData('.'.toNativeUtf8().cast(), int.parse(GKernel.instance.mapIndex.text), nullptr, nullptr);
                         }),
                   ),
