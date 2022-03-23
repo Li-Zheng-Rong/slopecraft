@@ -347,6 +347,8 @@ class _SetBlockListState extends State<SetBlockList> {
                             child: const Text('保存设置'),
                             onPressed: () async {
                               await GKernel.instance.setType(context);
+                              GKernel.instance.index.value = 2;
+                              // GKernel.instance.setStateFunc(() {});
                             })
                       ],
                     ),

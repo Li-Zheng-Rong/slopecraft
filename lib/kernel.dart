@@ -354,7 +354,7 @@ List<String> baseColorNames = [
   '',
   ''
 ];
-enum ExportType { file, litematica, structure }
+enum ExportType { file, litematica, structure, unselected }
 
 class Item {
   Item({required this.count, required this.name, required this.image, required this.countb});
@@ -375,8 +375,9 @@ class GKernel {
 
   factory GKernel() => getInstance();
   String current = path.current;
+  ValueNotifier<int> index = ValueNotifier<int>(0);
   Color backgroundColor = const Color.fromARGB(255, 220, 220, 220);
-  int mapType = mapTypes.Slope;
+  int mapType = 4;
   String gameVersion = '1.18';
   SlopeCraftL scl = SlopeCraftL(DynamicLibrary.open('slopecraft.dll'));
   File picture = File('');
@@ -387,7 +388,7 @@ class GKernel {
   Logger logger = Logger(
     printer: PrettyPrinter(methodCount: 4, errorMethodCount: 8, lineLength: 120, colors: true, printEmojis: false, printTime: true),
   );
-  ExportType exportType = ExportType.litematica;
+  ExportType exportType = ExportType.unselected;
   BlockListManager blockListManager = BlockListManager();
   bool dithering = false;
   String convertMethod = 'RGB+';
@@ -571,26 +572,13 @@ class GKernel {
       return;
     }
     if (!silence) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return ContentDialog(
-            title: const Text('设置保存成功'),
-            content: const Text('可以导入图片了'),
-            actions: [
-              SizedBox(
-                width: 150,
-                child: FilledButton(
-                  child: const Text('确定'),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-              ),
-            ],
-          );
-        },
+      showSnackbar(
+        context,
+        const Snackbar(
+          content: Text('设置保存成功!'),
+        ),
       );
+      index.value = 2;
     }
   }
 
@@ -687,26 +675,13 @@ class GKernel {
     show = raw;
     showraw = true;
     if (!silence) {
-      await showDialog(
-        context: context,
-        builder: (context) {
-          return ContentDialog(
-            title: const Text('导入图片成功'),
-            content: const Text('可以进行下一步了'),
-            actions: [
-              SizedBox(
-                width: 150,
-                child: FilledButton(
-                  child: const Text('确定'),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-              ),
-            ],
-          );
-        },
+      showSnackbar(
+        context,
+        const Snackbar(
+          content: Text('导入图片成功!'),
+        ),
       );
+      index.value = 3;
     }
   }
 

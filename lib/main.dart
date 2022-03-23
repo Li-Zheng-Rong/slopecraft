@@ -119,8 +119,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> with WindowListener {
-  int index = 0;
-
   @override
   void initState() {
     windowManager.addListener(this);
@@ -137,84 +135,89 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
   Widget build(BuildContext context) {
     Typography typography = FluentTheme.of(context).typography;
     final appTheme = context.watch<AppTheme>();
-    return NavigationView(
-      appBar: NavigationAppBar(
-        title: () {
-          if (kIsWeb) return const Text(appTitle);
-          return const DragToMoveArea(
-            child: Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: Text(appTitle),
-            ),
-          );
-        }(),
-        actions: kIsWeb
-            ? null
-            : DragToMoveArea(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [Spacer(), WindowButtons()],
+    return ValueListenableBuilder(
+      valueListenable: GKernel.instance.index,
+      builder: (context, value, child) {
+        return NavigationView(
+          appBar: NavigationAppBar(
+            title: () {
+              if (kIsWeb) return const Text(appTitle);
+              return const DragToMoveArea(
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text(appTitle),
                 ),
+              );
+            }(),
+            actions: kIsWeb
+                ? null
+                : DragToMoveArea(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [Spacer(), WindowButtons()],
+                    ),
+                  ),
+            automaticallyImplyLeading: true,
+          ),
+          pane: NavigationPane(
+            selected: GKernel.instance.index.value,
+            onChanged: (i) => setState(() => GKernel.instance.index.value = i),
+            size: const NavigationPaneSize(
+              openMinWidth: 200,
+              openMaxWidth: 250,
+            ),
+            displayMode: appTheme.displayMode,
+            header: Container(
+              height: kOneLineTileHeight,
+              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              child: Text('SlopeCraft', style: typography.title),
+            ),
+            items: [
+              PaneItem(
+                icon: const Icon(FluentIcons.task_add),
+                title: const Text('开始'),
               ),
-        automaticallyImplyLeading: true,
-      ),
-      pane: NavigationPane(
-        selected: index,
-        onChanged: (i) => setState(() => index = i),
-        size: const NavigationPaneSize(
-          openMinWidth: 200,
-          openMaxWidth: 250,
-        ),
-        displayMode: appTheme.displayMode,
-        header: Container(
-          height: kOneLineTileHeight,
-          padding: const EdgeInsets.symmetric(horizontal: 10.0),
-          child: Text('SlopeCraft', style: typography.title),
-        ),
-        items: [
-          PaneItem(
-            icon: const Icon(FluentIcons.task_add),
-            title: const Text('开始'),
+              PaneItem(
+                icon: const Icon(FluentIcons.registry_editor),
+                title: const Text('方块列表'),
+              ),
+              PaneItem(
+                icon: const Icon(FluentIcons.picture_center),
+                title: const Text('导入图片'),
+              ),
+              PaneItem(
+                icon: const Icon(FluentIcons.blur),
+                title: const Text('调整颜色'),
+              ),
+              PaneItem(
+                icon: const Icon(FluentIcons.view_in_a_r),
+                title: const Text('导出'),
+              ),
+            ],
+            footerItems: [
+              PaneItemSeparator(),
+              PaneItem(
+                icon: const Icon(FluentIcons.info),
+                title: const Text('关于'),
+              ),
+            ],
           ),
-          PaneItem(
-            icon: const Icon(FluentIcons.registry_editor),
-            title: const Text('方块列表'),
+          content: NavigationBody(
+            transitionBuilder: (child, animation) {
+              return DrillInPageTransition(child: child, animation: animation);
+            },
+            index: GKernel.instance.index.value,
+            children: const [
+              Start(),
+              SetBlockList(),
+              ImportPicture(),
+              ConvertMap(),
+              Export(),
+              About(),
+            ],
           ),
-          PaneItem(
-            icon: const Icon(FluentIcons.picture_center),
-            title: const Text('导入图片'),
-          ),
-          PaneItem(
-            icon: const Icon(FluentIcons.blur),
-            title: const Text('调整颜色'),
-          ),
-          PaneItem(
-            icon: const Icon(FluentIcons.view_in_a_r),
-            title: const Text('导出'),
-          ),
-        ],
-        footerItems: [
-          PaneItemSeparator(),
-          PaneItem(
-            icon: const Icon(FluentIcons.info),
-            title: const Text('关于'),
-          ),
-        ],
-      ),
-      content: NavigationBody(
-        transitionBuilder: (child, animation) {
-          return DrillInPageTransition(child: child, animation: animation);
-        },
-        index: index,
-        children: const [
-          Start(),
-          SetBlockList(),
-          ImportPicture(),
-          ConvertMap(),
-          Export(),
-          About(),
-        ],
-      ),
+        );
+      },
     );
   }
 }

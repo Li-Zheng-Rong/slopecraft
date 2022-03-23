@@ -147,12 +147,14 @@ class _StartState extends State<Start> {
                           onChanged: (value) async {
                             if (value) {
                               GKernel.instance.mapType = mapTypes.Slope;
-                              GKernel.instance.exportType = ExportType.litematica;
+                              GKernel.instance.index.value = 1;
                               bool cvready = GKernel.instance.scl.SCL_queryStep() >= step.convertionReady;
                               if (GKernel.instance.scl.SCL_queryStep() >= step.wait4Image) {
                                 await GKernel.instance.setType(context, true);
+                                GKernel.instance.index.value = 2;
                                 if (cvready) {
                                   await GKernel.instance.setRawImage(context, true);
+                                  GKernel.instance.index.value = 3;
                                 }
                               }
                             }
@@ -174,12 +176,14 @@ class _StartState extends State<Start> {
                           onChanged: (value) async {
                             if (value) {
                               GKernel.instance.mapType = mapTypes.Flat;
-                              GKernel.instance.exportType = ExportType.litematica;
+                              GKernel.instance.index.value = 1;
                               bool cvready = GKernel.instance.scl.SCL_queryStep() >= step.convertionReady;
                               if (GKernel.instance.scl.SCL_queryStep() >= step.wait4Image) {
                                 await GKernel.instance.setType(context, true);
+                                GKernel.instance.index.value = 2;
                                 if (cvready) {
                                   await GKernel.instance.setRawImage(context, true);
+                                  GKernel.instance.index.value = 3;
                                 }
                               }
                             }
@@ -202,11 +206,14 @@ class _StartState extends State<Start> {
                             if (value) {
                               GKernel.instance.mapType = mapTypes.FileOnly;
                               GKernel.instance.exportType = ExportType.file;
+                              GKernel.instance.index.value = 1;
                               bool cvready = GKernel.instance.scl.SCL_queryStep() >= step.convertionReady;
                               if (GKernel.instance.scl.SCL_queryStep() >= step.wait4Image) {
                                 await GKernel.instance.setType(context, true);
+                                GKernel.instance.index.value = 2;
                                 if (cvready) {
                                   await GKernel.instance.setRawImage(context, true);
+                                  GKernel.instance.index.value = 3;
                                 }
                               }
                             }

@@ -207,51 +207,45 @@ class _ConvertMapState extends State<ConvertMap> {
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
                                   RepaintBoundary(
-                                    child: ToggleButton(
+                                    child: Button(
                                       child: const Text('导出投影'),
-                                      onChanged: GKernel.instance.mapType == mapTypes.FileOnly
+                                      onPressed: GKernel.instance.mapType == mapTypes.FileOnly || GKernel.instance.scl.SCL_queryStep() <= step.convertionReady
                                           ? null
                                           : GKernel.instance.converting
                                               ? null
-                                              : (val) {
-                                                  if (val) {
-                                                    GKernel.instance.exportType = ExportType.litematica;
-                                                    setState(() {});
-                                                  }
+                                              : () {
+                                                  GKernel.instance.exportType = ExportType.litematica;
+                                                  GKernel.instance.index.value = 4;
+                                                  setState(() {});
                                                 },
-                                      checked: GKernel.instance.exportType == ExportType.litematica,
                                     ),
                                   ),
                                   const SizedBox(height: 8.0),
                                   RepaintBoundary(
-                                    child: ToggleButton(
+                                    child: Button(
                                       child: const Text('导出结构文件'),
-                                      onChanged: GKernel.instance.mapType == mapTypes.FileOnly
+                                      onPressed: GKernel.instance.mapType == mapTypes.FileOnly || GKernel.instance.scl.SCL_queryStep() <= step.convertionReady
                                           ? null
                                           : GKernel.instance.converting
                                               ? null
-                                              : (val) {
-                                                  if (val) {
-                                                    GKernel.instance.exportType = ExportType.structure;
-                                                    setState(() {});
-                                                  }
+                                              : () {
+                                                  GKernel.instance.exportType = ExportType.structure;
+                                                  GKernel.instance.index.value = 4;
+                                                  setState(() {});
                                                 },
-                                      checked: GKernel.instance.exportType == ExportType.structure,
                                     ),
                                   ),
                                   const SizedBox(height: 8.0),
                                   RepaintBoundary(
-                                    child: ToggleButton(
+                                    child: Button(
                                       child: const Text('导出地图文件'),
-                                      onChanged: GKernel.instance.converting
+                                      onPressed: GKernel.instance.converting || GKernel.instance.scl.SCL_queryStep() <= step.convertionReady
                                           ? null
-                                          : (val) {
-                                              if (val) {
-                                                GKernel.instance.exportType = ExportType.file;
-                                                setState(() {});
-                                              }
+                                          : () {
+                                              GKernel.instance.exportType = ExportType.file;
+                                              GKernel.instance.index.value = 4;
+                                              setState(() {});
                                             },
-                                      checked: GKernel.instance.exportType == ExportType.file,
                                     ),
                                   ),
                                   const SizedBox(height: 8.0),

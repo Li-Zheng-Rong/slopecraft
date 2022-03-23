@@ -5,8 +5,6 @@ import 'package:ffi/ffi.dart' as ffi;
 import 'package:file_picker/file_picker.dart' as file_picker;
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/services.dart';
-import 'package:path/path.dart' as path;
-import 'package:process_run/cmd_run.dart';
 
 import 'kernel.dart';
 import 'scl_interface.dart';
@@ -247,6 +245,25 @@ class _ExportMapState extends State<ExportMap> {
                           }
 
                           GKernel.instance.scl.SCL_exportAsData('.'.toNativeUtf8().cast(), int.parse(GKernel.instance.mapIndex.text), nullptr, nullptr);
+                          showDialog(
+                            builder: (context) {
+                              return ContentDialog(
+                                title: const Text('导出完成'),
+                                content: const Text('已导出地图文件'),
+                                actions: [
+                                  SizedBox(
+                                    width: 150,
+                                    child: FilledButton(
+                                        child: const Text('确定'),
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        }),
+                                  ),
+                                ],
+                              );
+                            },
+                            context: context,
+                          );
                         }),
                   ),
                 ),

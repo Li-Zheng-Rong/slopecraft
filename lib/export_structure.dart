@@ -600,6 +600,25 @@ class _ExportStructureState extends State<ExportStructure> {
                                         return;
                                       }
                                       GKernel.instance.scl.SCL_exportAsStructure(path.basename(outputFile).toNativeUtf8().cast(), nullptr);
+                                      showDialog(
+                                        builder: (context) {
+                                          return ContentDialog(
+                                            title: const Text('导出完成'),
+                                            content: const Text('已导出结构文件'),
+                                            actions: [
+                                              SizedBox(
+                                                width: 150,
+                                                child: FilledButton(
+                                                    child: const Text('确定'),
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                    }),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                        context: context,
+                                      );
                                     },
                                   ),
                                 ),

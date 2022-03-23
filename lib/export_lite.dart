@@ -687,6 +687,25 @@ class _ExportLitematicaState extends State<ExportLitematica> {
                                           GKernel.instance.liteAuthor.text.toNativeUtf8().cast(),
                                           GKernel.instance.liteRegionName.text.toNativeUtf8().cast(),
                                           nullptr);
+                                      showDialog(
+                                        builder: (context) {
+                                          return ContentDialog(
+                                            title: const Text('导出完成'),
+                                            content: const Text('已导出投影文件'),
+                                            actions: [
+                                              SizedBox(
+                                                width: 150,
+                                                child: FilledButton(
+                                                    child: const Text('确定'),
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                    }),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                        context: context,
+                                      );
                                     },
                                   ),
                                 ),
