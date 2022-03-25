@@ -1,7 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:system_theme/system_theme.dart';
-import 'package:flutter_acrylic/flutter_acrylic.dart' as flutter_acrylic;
+import 'package:flutter_acrylic/flutter_acrylic.dart';
 
 enum NavigationIndicators { sticky, end }
 
@@ -34,11 +34,10 @@ class AppTheme extends ChangeNotifier {
     notifyListeners();
   }
 
-  flutter_acrylic.WindowEffect _acrylicEffect =
-      flutter_acrylic.WindowEffect.disabled;
-  flutter_acrylic.WindowEffect get acrylicEffect => _acrylicEffect;
-  set acrylicEffect(flutter_acrylic.WindowEffect acrylicEffect) {
-    _acrylicEffect = acrylicEffect;
+  WindowEffect _windowEffect = WindowEffect.disabled;
+  WindowEffect get windowEffect => _windowEffect;
+  set windowEffect(WindowEffect windowEffect) {
+    _windowEffect = windowEffect;
     notifyListeners();
   }
 
@@ -50,10 +49,21 @@ class AppTheme extends ChangeNotifier {
   }
 }
 
+void setEffect(WindowEffect effect, BuildContext context) {
+  Window.setEffect(
+    effect: effect,
+    color: [
+      WindowEffect.solid,
+      WindowEffect.acrylic,
+    ].contains(effect)
+        ? FluentTheme.of(context).micaBackgroundColor.withOpacity(0.05)
+        : Colors.transparent,
+    dark: FluentTheme.of(context).brightness.isDark,
+  );
+}
+
 AccentColor get systemAccentColor {
-  if (defaultTargetPlatform == TargetPlatform.windows ||
-      defaultTargetPlatform == TargetPlatform.android ||
-      kIsWeb) {
+  if (defaultTargetPlatform == TargetPlatform.windows || defaultTargetPlatform == TargetPlatform.android || kIsWeb) {
     return AccentColor('normal', {
       'darkest': SystemTheme.accentInstance.darkest,
       'darker': SystemTheme.accentInstance.darker,

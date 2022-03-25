@@ -118,7 +118,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: d08d1d024fc63146c7691b8d115e59c364a18825
+      resolved-ref: "5b6f1e7e86adb78f3b983d403c7533c8bb399ef5"
       url: "https://github.com/bdlukaa/fluent_ui.git"
     source: git
     version: "3.9.2"
@@ -328,7 +328,7 @@ packages:
       name: synchronized
       url: "https://mirrors.tuna.tsinghua.edu.cn/dart-pub/"
     source: hosted
-    version: "3.0.0"
+    version: "3.0.0+2"
   system_theme:
     dependency: "direct main"
     description:
@@ -433,13 +433,15 @@ packages:
       name: win32
       url: "https://mirrors.tuna.tsinghua.edu.cn/dart-pub/"
     source: hosted
-    version: "2.4.3"
+    version: "2.4.4"
   window_manager:
     dependency: "direct main"
     description:
-      name: window_manager
-      url: "https://mirrors.tuna.tsinghua.edu.cn/dart-pub/"
-    source: hosted
+      path: "."
+      ref: main
+      resolved-ref: "5520f43053f053dccc65c809bea50fdca6713701"
+      url: "https://github.com/leanflutter/window_manager.git"
+    source: git
     version: "0.2.0"
   xml:
     dependency: transitive

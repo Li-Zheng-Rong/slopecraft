@@ -696,10 +696,11 @@ class _ExportLitematicaState extends State<ExportLitematica> {
                                               SizedBox(
                                                 width: 150,
                                                 child: FilledButton(
-                                                    child: const Text('确定'),
-                                                    onPressed: () {
-                                                      Navigator.pop(context);
-                                                    }),
+                                                  child: const Text('确定'),
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                  },
+                                                ),
                                               ),
                                             ],
                                           );

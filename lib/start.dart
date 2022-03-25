@@ -194,32 +194,29 @@ class _StartState extends State<Start> {
                     ),
                   ),
                   Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 10.0),
-                      child: RepaintBoundary(
-                        child: ToggleButton(
-                          child: Row(
-                            children: const [Icon(FluentIcons.increase_indent_arrow), Text('创建纯文件地图画')],
-                          ),
-                          checked: GKernel.instance.mapType == mapTypes.FileOnly,
-                          onChanged: (value) async {
-                            if (value) {
-                              GKernel.instance.mapType = mapTypes.FileOnly;
-                              GKernel.instance.exportType = ExportType.file;
-                              GKernel.instance.index.value = 1;
-                              bool cvready = GKernel.instance.scl.SCL_queryStep() >= step.convertionReady;
-                              if (GKernel.instance.scl.SCL_queryStep() >= step.wait4Image) {
-                                await GKernel.instance.setType(context, true);
-                                GKernel.instance.index.value = 2;
-                                if (cvready) {
-                                  await GKernel.instance.setRawImage(context, true);
-                                  GKernel.instance.index.value = 3;
-                                }
+                    child: RepaintBoundary(
+                      child: ToggleButton(
+                        child: Row(
+                          children: const [Icon(FluentIcons.increase_indent_arrow), Text('创建纯文件地图画')],
+                        ),
+                        checked: GKernel.instance.mapType == mapTypes.FileOnly,
+                        onChanged: (value) async {
+                          if (value) {
+                            GKernel.instance.mapType = mapTypes.FileOnly;
+                            GKernel.instance.exportType = ExportType.file;
+                            GKernel.instance.index.value = 1;
+                            bool cvready = GKernel.instance.scl.SCL_queryStep() >= step.convertionReady;
+                            if (GKernel.instance.scl.SCL_queryStep() >= step.wait4Image) {
+                              await GKernel.instance.setType(context, true);
+                              GKernel.instance.index.value = 2;
+                              if (cvready) {
+                                await GKernel.instance.setRawImage(context, true);
+                                GKernel.instance.index.value = 3;
                               }
                             }
-                            setState(() {});
-                          },
-                        ),
+                          }
+                          setState(() {});
+                        },
                       ),
                     ),
                   ),

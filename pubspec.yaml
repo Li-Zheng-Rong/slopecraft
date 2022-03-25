@@ -34,11 +34,14 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   file_picker: ^4.5.1
-  flutter_acrylic: ^1.0.0+1
+  flutter_acrylic: ^1.0.0+2
   provider: ^6.0.2
   system_theme: ^1.0.1
   url_launcher: ^6.0.20
-  window_manager: ^0.2.0
+  window_manager:
+    git:
+      url: https://github.com/leanflutter/window_manager.git
+      ref: main
   fluent_ui:
     git: https://github.com/bdlukaa/fluent_ui.git
   image: ^3.1.3

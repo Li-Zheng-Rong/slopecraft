@@ -12,6 +12,7 @@ import 'block.dart';
 import 'blockmanager.dart';
 import 'count_convert.dart';
 import 'scl_interface.dart';
+import 'package:window_manager/window_manager.dart';
 
 const String dataPrefix = 'SCData';
 
@@ -354,7 +355,7 @@ List<String> baseColorNames = [
   '',
   ''
 ];
-enum ExportType { file, litematica, structure, unselected }
+enum ExportType { file, litematica, structure }
 
 class Item {
   Item({required this.count, required this.name, required this.image, required this.countb});
@@ -374,10 +375,11 @@ class GKernel {
   }
 
   factory GKernel() => getInstance();
+  bool multiMode = false;
   String current = path.current;
   ValueNotifier<int> index = ValueNotifier<int>(0);
   Color backgroundColor = const Color.fromARGB(255, 220, 220, 220);
-  int mapType = 4;
+  int mapType = 0;
   String gameVersion = '1.18';
   SlopeCraftL scl = SlopeCraftL(DynamicLibrary.open('slopecraft.dll'));
   File picture = File('');
@@ -388,7 +390,7 @@ class GKernel {
   Logger logger = Logger(
     printer: PrettyPrinter(methodCount: 4, errorMethodCount: 8, lineLength: 120, colors: true, printEmojis: false, printTime: true),
   );
-  ExportType exportType = ExportType.unselected;
+  ExportType exportType = ExportType.litematica;
   BlockListManager blockListManager = BlockListManager();
   bool dithering = false;
   String convertMethod = 'RGB+';
@@ -427,6 +429,8 @@ class GKernel {
   List<Item> blocks = [];
   List<Item> blocksLeft = [];
   List<Item> blocksRight = [];
+  Directory? multidir;
+  double titleBarHeight = 0;
   void getBlockCounts() {
     blocks.clear();
     blocksLeft.clear();
@@ -582,27 +586,27 @@ class GKernel {
     }
   }
 
-  void loadColorSet(String p) {
+  Future<void> loadColorSet(String p) async {
     File rgb = File(path.join(p, 'RGB.TokiColor'));
-    if (rgb.existsSync() == false) {
+    if (!(await rgb.exists())) {
       return;
     }
-    String rgbs = rgb.readAsStringSync();
+    String rgbs = await rgb.readAsString();
     File hsv = File(path.join(p, 'HSV.TokiColor'));
-    if (hsv.existsSync() == false) {
+    if (!(await hsv.exists())) {
       return;
     }
-    String hsvs = hsv.readAsStringSync();
+    String hsvs = await hsv.readAsString();
     File lab = File(path.join(p, 'Lab.TokiColor'));
-    if (lab.existsSync() == false) {
+    if (!(await lab.exists())) {
       return;
     }
-    String labs = lab.readAsStringSync();
+    String labs = await lab.readAsString();
     File xyz = File(path.join(p, 'XYZ.TokiColor'));
-    if (xyz.existsSync() == false) {
+    if (!(await xyz.exists())) {
       return;
     }
-    String xyzs = xyz.readAsStringSync();
+    String xyzs = await xyz.readAsString();
     scl.SCL_setColorSet(rgbs.toNativeUtf8().cast<Int8>(), hsvs.toNativeUtf8().cast<Int8>(), labs.toNativeUtf8().cast<Int8>(), xyzs.toNativeUtf8().cast<Int8>());
   }
 

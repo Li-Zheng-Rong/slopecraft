@@ -32,7 +32,7 @@ class _ImportPictureState extends State<ImportPicture> {
   final List<String> BGCRadioButtons = <String>[
     '纯白 #FFFFFF',
     '高级灰 #DCDCDC',
-    '自定义',
+    // '自定义',
   ];
   final List<XFile> _list = [];
   bool _dragging = false;
@@ -392,7 +392,9 @@ class _ImportPictureState extends State<ImportPicture> {
                                                       } else if (_BGCCurrentIndex == 1) {
                                                         GKernel.instance.backgroundColor = const Color.fromARGB(255, 220, 220, 220);
                                                       }
-                                                      await GKernel.instance.setRawImage(context, false);
+                                                      if (GKernel.instance.rawImage != null) {
+                                                        await GKernel.instance.setRawImage(context, false);
+                                                      }
                                                       Navigator.pop(context);
                                                     },
                                                   ),
