@@ -10,14 +10,14 @@ import 'package:window_manager/window_manager.dart';
 
 import 'about.dart';
 import 'convert_map.dart';
+import 'cut_tool.dart';
 import 'export.dart';
 import 'import_picture.dart';
 import 'kernel.dart';
-import 'multi.dart';
 import 'set_block_list.dart';
+import 'settings.dart';
 import 'start.dart';
 import 'theme.dart';
-import 'cut_tool.dart';
 
 const String appTitle = 'SlopeCraft';
 
@@ -33,7 +33,23 @@ bool get isDesktop {
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemTheme.accentInstance;
+  if (TargetPlatform.windows == defaultTargetPlatform) {
+    SystemTheme.accentInstance;
+  }
+
+  if (isDesktop) {
+    await flutter_acrylic.Window.initialize();
+    await WindowManager.instance.ensureInitialized();
+    windowManager.waitUntilReadyToShow().then((_) async {
+      // await windowManager.setTitleBarStyle(TitleBarStyle.hidden, windowButtonVisibility: false);
+      await windowManager.setSize(const Size(1000, 610));
+      await windowManager.setMinimumSize(const Size(1000, 610));
+      await windowManager.center();
+      // await windowManager.setPreventClose(true);
+      await windowManager.setSkipTaskbar(false);
+      await windowManager.show();
+    });
+  }
   //create kernel
   await GKernel.instance.loadColorSet(path.join(GKernel.instance.current, dataPrefix));
   File fb = File(path.join(GKernel.instance.current, dataPrefix, 'Blocks.json'));
@@ -44,27 +60,6 @@ void main(List<String> args) async {
   GKernel.instance.blockListManager.loadTexture(folderPath: path.join(GKernel.instance.current, dataPrefix, 'Texture'));
   GKernel.instance.blockListManager.select(baseColor: 0, block: GKernel.instance.blockListManager.blocks[0]![0]);
 
-  if (isDesktop) {
-    await flutter_acrylic.Window.initialize();
-    await WindowManager.instance.ensureInitialized();
-    await windowManager.waitUntilReadyToShow().then((_) async {
-      // await windowManager.setTitleBarStyle(TitleBarStyle.hidden, windowButtonVisibility: false);
-      await windowManager.setSize(const Size(1030, 610));
-      await windowManager.setMinimumSize(const Size(755, 545));
-      await windowManager.center();
-      // await windowManager.setPreventClose(true);
-      await windowManager.setSkipTaskbar(false);
-      await windowManager.show();
-
-      flutter_acrylic.Window.setEffect(
-        effect: flutter_acrylic.WindowEffect.acrylic,
-        color:
-            //  FluentTheme.of(context).micaBackgroundColor.withOpacity(0.05),
-            Colors.transparent,
-        dark: await SystemTheme.darkMode,
-      );
-    });
-  }
   // if (DateTime.now().month == DateTime.april && DateTime.now().day == 1) {
   //   Random random = Random(DateTime.now().millisecondsSinceEpoch);
   //   if (random.nextInt(3) == 0) {
@@ -112,8 +107,8 @@ class MyApp extends StatelessWidget {
             return Directionality(
               textDirection: appTheme.textDirection,
               child: NavigationPaneTheme(
-                data: const NavigationPaneThemeData(
-                  backgroundColor: Colors.transparent,
+                data: NavigationPaneThemeData(
+                  backgroundColor: appTheme.windowEffect != flutter_acrylic.WindowEffect.disabled ? Colors.transparent : null,
                 ),
                 child: child!,
               ),
@@ -162,37 +157,14 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
         return NavigationView(
           appBar: const NavigationAppBar(
             height: 25,
-            title: DragToMoveArea(
-              child: Text(''),
-            ),
             automaticallyImplyLeading: false,
           ),
-          // appBar: NavigationAppBar(
-          //   title: () {
-          //     if (kIsWeb) return const Text(appTitle);
-          //     return const DragToMoveArea(
-          //       child: Align(
-          //         alignment: AlignmentDirectional.centerStart,
-          //         child: Text(appTitle),
-          //       ),
-          //     );
-          //   }(),
-          //   actions: kIsWeb
-          //       ? null
-          //       : DragToMoveArea(
-          //           child: Row(
-          //             crossAxisAlignment: CrossAxisAlignment.start,
-          //             children: const [Spacer(), WindowButtons()],
-          //           ),
-          //         ),
-          //   automaticallyImplyLeading: true,
-          // ),
           pane: NavigationPane(
             selected: GKernel.instance.index.value,
             onChanged: (i) => setState(() => GKernel.instance.index.value = i),
             size: const NavigationPaneSize(
-              openMinWidth: 200,
-              openMaxWidth: 250,
+              openMinWidth: 150,
+              openMaxWidth: 200,
             ),
             displayMode: appTheme.displayMode,
             header: Container(
@@ -225,16 +197,16 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
               ),
               PaneItemSeparator(),
               PaneItem(
-                icon: const Icon(FluentIcons.map_layers),
-                title: const Text('批量操作'),
-              ),
-              PaneItem(
                 icon: const Icon(FluentIcons.toolbox),
                 title: const Text('图像工具'),
               ),
             ],
             footerItems: [
               PaneItemSeparator(),
+              PaneItem(
+                icon: const Icon(FluentIcons.settings),
+                title: const Text('设置'),
+              ),
               PaneItem(
                 icon: const Icon(FluentIcons.info),
                 title: const Text('关于'),
@@ -252,8 +224,8 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
               ImportPicture(),
               ConvertMap(),
               Export(),
-              MultiConvert(),
               CutTool(),
+              Settings(),
               About(),
             ],
           ),

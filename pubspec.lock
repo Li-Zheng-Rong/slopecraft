@@ -7,7 +7,7 @@ packages:
       name: archive
       url: "https://mirrors.tuna.tsinghua.edu.cn/dart-pub/"
     source: hosted
-    version: "3.2.2"
+    version: "3.3.0"
   args:
     dependency: transitive
     description:
@@ -118,7 +118,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "5b6f1e7e86adb78f3b983d403c7533c8bb399ef5"
+      resolved-ref: "44298102a51449e1de3ae06d99f690ba8303998e"
       url: "https://github.com/bdlukaa/fluent_ui.git"
     source: git
     version: "3.9.2"

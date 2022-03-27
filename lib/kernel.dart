@@ -12,7 +12,6 @@ import 'block.dart';
 import 'blockmanager.dart';
 import 'count_convert.dart';
 import 'scl_interface.dart';
-import 'package:window_manager/window_manager.dart';
 
 const String dataPrefix = 'SCData';
 
@@ -376,6 +375,7 @@ class GKernel {
 
   factory GKernel() => getInstance();
   bool multiMode = false;
+  List<String> multiRaw = [];
   String current = path.current;
   ValueNotifier<int> index = ValueNotifier<int>(0);
   Color backgroundColor = const Color.fromARGB(255, 220, 220, 220);
@@ -429,8 +429,9 @@ class GKernel {
   List<Item> blocks = [];
   List<Item> blocksLeft = [];
   List<Item> blocksRight = [];
-  Directory? multidir;
   double titleBarHeight = 0;
+  List<String> multiPath = [];
+  List<String> multiDir = [];
   void getBlockCounts() {
     blocks.clear();
     blocksLeft.clear();
@@ -721,6 +722,66 @@ class GKernel {
     ffi.malloc.free(rows);
     ffi.malloc.free(cols);
     ffi.malloc.free(dest);
+  }
+
+  Future<void> importMultiImage(BuildContext context, List<String> p) async {
+    int failed = 0;
+    for (var item in p) {
+      if (!multiPath.contains(item)) {
+        if (path.extension(item) == '') {
+          if (multiDir.contains(item)) {
+            failed++;
+          } else {
+            multiDir.add(item);
+            multiPath.add(item);
+          }
+        } else {
+          bool value = File(item).existsSync();
+          if (value) {
+            var picture = File(item);
+            if (['.png', '.bmp', '.jpeg', '.jpg', '.tga', '.webp', '.tiff'].contains(path.extension(item))) {
+              var v = picture.readAsBytesSync();
+              List<int> f = v;
+              var p = img.decodeNamedImage(f, path.extension(item));
+
+              if (p != null) {
+                multiRaw.add(item);
+                multiPath.add(item);
+              } else {
+                failed++;
+              }
+            } else {
+              failed++;
+            }
+          } else {
+            failed++;
+          }
+        }
+      } else {
+        failed++;
+      }
+    }
+    await showDialog(
+      builder: (context) {
+        return ContentDialog(
+          title: const Text('读取完成'),
+          content: Text('已加载${p.length - failed}/${p.length}'),
+          actions: [
+            SizedBox(
+              width: 150,
+              child: Button(
+                child: const Text('确定'),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+          ],
+        );
+      },
+      context: context,
+    );
+    return;
   }
 
   Future<void> importImage(BuildContext context, String p) async {
