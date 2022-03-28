@@ -20,7 +20,7 @@ class AppTheme extends ChangeNotifier {
     notifyListeners();
   }
 
-  PaneDisplayMode _displayMode = PaneDisplayMode.auto;
+  PaneDisplayMode _displayMode = PaneDisplayMode.open;
   PaneDisplayMode get displayMode => _displayMode;
   set displayMode(PaneDisplayMode displayMode) {
     _displayMode = displayMode;
@@ -34,7 +34,7 @@ class AppTheme extends ChangeNotifier {
     notifyListeners();
   }
 
-  WindowEffect _windowEffect = WindowEffect.disabled;
+  WindowEffect _windowEffect = WindowEffect.acrylic;
   WindowEffect get windowEffect => _windowEffect;
   set windowEffect(WindowEffect windowEffect) {
     _windowEffect = windowEffect;

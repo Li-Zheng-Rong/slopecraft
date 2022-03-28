@@ -1,4 +1,7 @@
+import 'dart:async';
+import 'dart:ffi';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
@@ -6,7 +9,9 @@ import 'package:flutter_acrylic/flutter_acrylic.dart' as flutter_acrylic;
 import 'package:path/path.dart' as path;
 import 'package:provider/provider.dart';
 import 'package:system_theme/system_theme.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:ffi/ffi.dart' as ffi;
 
 import 'about.dart';
 import 'convert_map.dart';
@@ -18,6 +23,8 @@ import 'set_block_list.dart';
 import 'settings.dart';
 import 'start.dart';
 import 'theme.dart';
+
+import 'package:win32/win32.dart';
 
 const String appTitle = 'SlopeCraft';
 
@@ -31,15 +38,38 @@ bool get isDesktop {
   ].contains(defaultTargetPlatform);
 }
 
+const ID_TEXT = 200;
+const ID_EDITTEXT = 201;
+const ID_PROGRESS = 202;
+
+final hInstance = GetModuleHandle(nullptr);
+String textEntered = '';
+int dialogReturnProc(int hwndDlg, int message, int wParam, int lParam) {
+  switch (message) {
+    case WM_INITDIALOG:
+      {
+        SendDlgItemMessage(hwndDlg, ID_PROGRESS, PBM_SETPOS, 35, 0);
+        break;
+      }
+    case WM_COMMAND:
+      {
+        EndDialog(hwndDlg, wParam);
+        return LOWORD(wParam);
+      }
+  }
+
+  return FALSE;
+}
+
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   if (TargetPlatform.windows == defaultTargetPlatform) {
     SystemTheme.accentInstance;
   }
-
   if (isDesktop) {
+    await windowManager.ensureInitialized();
     await flutter_acrylic.Window.initialize();
-    await WindowManager.instance.ensureInitialized();
+    await flutter_acrylic.Window.setEffect(effect: flutter_acrylic.WindowEffect.acrylic, dark: await SystemTheme.darkMode);
     windowManager.waitUntilReadyToShow().then((_) async {
       // await windowManager.setTitleBarStyle(TitleBarStyle.hidden, windowButtonVisibility: false);
       await windowManager.setSize(const Size(1000, 610));
@@ -60,14 +90,75 @@ void main(List<String> args) async {
   GKernel.instance.blockListManager.loadTexture(folderPath: path.join(GKernel.instance.current, dataPrefix, 'Texture'));
   GKernel.instance.blockListManager.select(baseColor: 0, block: GKernel.instance.blockListManager.blocks[0]![0]);
 
-  // if (DateTime.now().month == DateTime.april && DateTime.now().day == 1) {
-  //   Random random = Random(DateTime.now().millisecondsSinceEpoch);
-  //   if (random.nextInt(3) == 0) {
-  //     Timer(const Duration(seconds: 10), () {
-  //       runCmd(ProcessCmd('imageCutter_tricky/imageCutter.exe', ['a']));
-  //     });
-  //   }
-  // }
+  if (DateTime.now().month == DateTime.april && DateTime.now().day == 1) {
+    Random random = Random(DateTime.now().millisecondsSinceEpoch);
+    if (random.nextInt(3) == 0) {
+      Timer(const Duration(seconds: 10), () {
+        // Allocate 8KB, which is more than enough space for the dialog in memory.
+        final ptr = ffi.calloc<Uint16>(4096);
+        var idx = 0;
+        Pointer<RECT> rect = ffi.calloc.call();
+        GetWindowRect(hInstance, rect);
+
+        idx += ptr.elementAt(idx).cast<DLGTEMPLATE>().setDialog(
+            style: WS_POPUP | WS_BORDER | WS_SYSMENU | DS_MODALFRAME | DS_SETFONT | WS_CAPTION,
+            title: 'SlopeCraft Compile time error',
+            cdit: 4,
+            cx: 360,
+            cy: 80,
+            x: (GetSystemMetrics(SM_CXSCREEN) ~/ 2 - (rect.ref.right - rect.ref.left)) ~/ 2,
+            y: (GetSystemMetrics(SM_CYSCREEN) ~/ 2 - (rect.ref.bottom - rect.ref.top)) ~/ 2,
+            fontName: 'MS Shell Dlg',
+            fontSize: 8);
+        idx += ptr.elementAt(idx).cast<DLGITEMTEMPLATE>().setDialogItem(
+            style: WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_DEFPUSHBUTTON,
+            x: 80,
+            y: 60,
+            cx: 50,
+            cy: 14,
+            id: IDOK,
+            windowSystemClass: 0x0080, // button
+            text: 'ReportErr');
+        idx += ptr.elementAt(idx).cast<DLGITEMTEMPLATE>().setDialogItem(
+            style: WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON,
+            x: 145,
+            y: 60,
+            cx: 50,
+            cy: 14,
+            id: IDCONTINUE,
+            windowSystemClass: 0x0080, // button
+            text: 'OK');
+        idx += ptr.elementAt(idx).cast<DLGITEMTEMPLATE>().setDialogItem(
+            style: WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON,
+            x: 210,
+            y: 60,
+            cx: 50,
+            cy: 14,
+            id: IDCANCEL,
+            windowSystemClass: 0x0080, // button
+            text: 'Exit');
+        idx += ptr.elementAt(idx).cast<DLGITEMTEMPLATE>().setDialogItem(
+            style: WS_CHILD | WS_VISIBLE,
+            x: 30,
+            y: 10,
+            cx: 350,
+            cy: 40,
+            id: ID_TEXT,
+            windowSystemClass: 0x0082, // static
+            text:
+                'Cannot find handx128.dll: Hardware not invented.\n\nSLOPECRAFT_FAILED_TO HAVE_A_HANDSHAKE_WITH_YOU\nHAVE_A_NICE_DAY_DONT_REPORT_THIS_AS_AN_ERROR_ITS_JUST_A_JOKE.');
+
+        final lpDialogFunc = Pointer.fromFunction<DlgProc>(dialogReturnProc, 0);
+
+        final nResult = DialogBoxIndirectParam(hInstance, ptr.cast<DLGTEMPLATE>(), NULL, lpDialogFunc, 0);
+
+        if (nResult == IDOK) {
+          launch('https://github.com/ToKiNoBug/SlopeCraft/issues');
+        }
+        free(ptr);
+      });
+    }
+  }
 
   runApp(const MyApp());
 }
@@ -109,6 +200,7 @@ class MyApp extends StatelessWidget {
               child: NavigationPaneTheme(
                 data: NavigationPaneThemeData(
                   backgroundColor: appTheme.windowEffect != flutter_acrylic.WindowEffect.disabled ? Colors.transparent : null,
+                  // backgroundColor: Colors.transparent,
                 ),
                 child: child!,
               ),
@@ -127,24 +219,15 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with WindowListener {
+class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
-    windowManager.addListener(this);
     super.initState();
   }
 
   @override
   void dispose() {
-    windowManager.removeListener(this);
     super.dispose();
-  }
-
-  @override
-  void onWindowFocus() {
-    // Make sure to call once.
-    setState(() {});
-    // do something
   }
 
   @override

@@ -431,6 +431,8 @@ class GKernel {
   List<Item> blocksRight = [];
   double titleBarHeight = 0;
   List<String> multiPath = [];
+  List<String> multiPathDir = [];
+  List<String> multiPathRaw = [];
   List<String> multiDir = [];
   void getBlockCounts() {
     blocks.clear();
@@ -727,15 +729,14 @@ class GKernel {
   Future<void> importMultiImage(BuildContext context, List<String> p) async {
     int failed = 0;
     for (var item in p) {
-      if (!multiPath.contains(item)) {
-        if (path.extension(item) == '') {
-          if (multiDir.contains(item)) {
-            failed++;
-          } else {
-            multiDir.add(item);
-            multiPath.add(item);
-          }
+      if (path.extension(item) == '') {
+        if (multiDir.contains(item)) {
+          failed++;
         } else {
+          multiDir.add(item);
+        }
+      } else {
+        if (!multiRaw.contains(item)) {
           bool value = File(item).existsSync();
           if (value) {
             var picture = File(item);
@@ -746,7 +747,6 @@ class GKernel {
 
               if (p != null) {
                 multiRaw.add(item);
-                multiPath.add(item);
               } else {
                 failed++;
               }
@@ -756,9 +756,9 @@ class GKernel {
           } else {
             failed++;
           }
+        } else {
+          failed++;
         }
-      } else {
-        failed++;
       }
     }
     await showDialog(

@@ -1,11 +1,8 @@
 import 'dart:io';
 
+import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:path/path.dart' as path;
-import 'package:desktop_drop/desktop_drop.dart';
-import 'package:image/image.dart' as img;
-import 'package:cross_file/cross_file.dart';
 import 'package:path/path.dart' as path;
 
 import 'kernel.dart';
@@ -142,7 +139,14 @@ class _ImportPictureState extends State<ImportPicture> {
                             ),
                             trailing: Button(
                               child: const Text('取消'),
-                              onPressed: () {},
+                              onPressed: () {
+                                if (index >= GKernel.instance.multiDir.length) {
+                                  GKernel.instance.multiRaw.removeAt(index - GKernel.instance.multiDir.length);
+                                } else {
+                                  GKernel.instance.multiDir.removeAt(index);
+                                }
+                                setState(() {});
+                              },
                             ),
                           );
                         }),
@@ -162,7 +166,7 @@ class _ImportPictureState extends State<ImportPicture> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Text(
-                              '第二步，点击“导入图片“按钮，选择你要制作为地图画的图片。',
+                              '将文件夹和/或文件拖动到左侧栏来添加',
                               style: typography.bodyLarge,
                             ),
                             const SizedBox(height: 10.0),
@@ -187,22 +191,17 @@ class _ImportPictureState extends State<ImportPicture> {
                           RepaintBoundary(
                             child: FilledButton(
                               child: Row(
-                                children: const [Icon(FluentIcons.explore_content), Text(' 导入图片')],
+                                children: const [
+                                  Icon(FluentIcons.next),
+                                  Text(' 下一步'),
+                                ],
                               ),
-                              onPressed: () async {
-                                FilePickerResult? result = await FilePicker.platform.pickFiles(
-                                    type: FileType.custom,
-                                    dialogTitle: '选择图片',
-                                    lockParentWindow: true,
-                                    allowedExtensions: ['png', 'bmp', 'jpeg', 'jpg', 'tga', 'webp', 'tiff']);
-                                //if user cancelled
-                                if (result == null) return;
-                                GKernel.instance.importImage(context, result.files.single.path.toString());
-                                setState(() {});
+                              onPressed: () {
+                                GKernel.instance.index.value = 3;
                               },
                             ),
                           ),
-                          const SizedBox(height: 8.0),
+                          const SizedBox(height: 8),
                           RepaintBoundary(
                             child: Button(
                               child: Row(
@@ -219,7 +218,7 @@ class _ImportPictureState extends State<ImportPicture> {
                                       builder: (context, setState) {
                                         return ContentDialog(
                                           constraints: const BoxConstraints(maxWidth: 600),
-                                          title: const Text('纯透明像素处理策略'),
+                                          title: const Text('纯透明像素处理策略（对每张图片都生效）'),
                                           content: Padding(
                                             padding: const EdgeInsets.all(10.0),
                                             child: Column(
@@ -369,9 +368,6 @@ class _ImportPictureState extends State<ImportPicture> {
                                                           GKernel.instance.backgroundColor = const Color.fromARGB(255, 255, 255, 255);
                                                         } else if (_BGCCurrentIndex == 1) {
                                                           GKernel.instance.backgroundColor = const Color.fromARGB(255, 220, 220, 220);
-                                                        }
-                                                        if (GKernel.instance.rawImage != null) {
-                                                          await GKernel.instance.setRawImage(context, false);
                                                         }
                                                         Navigator.pop(context);
                                                       },

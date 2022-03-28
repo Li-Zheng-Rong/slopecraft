@@ -118,7 +118,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "44298102a51449e1de3ae06d99f690ba8303998e"
+      resolved-ref: "967a19fd1b2465e8fcbf58b0e00da9b6bdb55ef2"
       url: "https://github.com/bdlukaa/fluent_ui.git"
     source: git
     version: "3.9.2"
@@ -428,7 +428,7 @@ packages:
     source: hosted
     version: "2.1.1"
   win32:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: win32
       url: "https://mirrors.tuna.tsinghua.edu.cn/dart-pub/"

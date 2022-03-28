@@ -265,6 +265,10 @@ class _ExportStructureState extends State<ExportStructure> {
                                         context: context,
                                         builder: (context) {
                                           return ContentDialog(
+                                            constraints: const BoxConstraints(
+                                              maxHeight: 150,
+                                              maxWidth: 400,
+                                            ),
                                             title: const Text('构建'),
                                             content: Center(
                                               child: FutureBuilder<void>(
