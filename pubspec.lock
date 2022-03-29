@@ -450,6 +450,13 @@ packages:
       url: "https://github.com/leanflutter/window_manager.git"
     source: git
     version: "0.2.0"
+  worker_manager:
+    dependency: "direct main"
+    description:
+      name: worker_manager
+      url: "https://mirrors.tuna.tsinghua.edu.cn/dart-pub/"
+    source: hosted
+    version: "4.2.6"
   xml:
     dependency: transitive
     description:

@@ -12,6 +12,7 @@ import 'package:system_theme/system_theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:ffi/ffi.dart' as ffi;
+import 'package:worker_manager/worker_manager.dart' as tp;
 
 import 'about.dart';
 import 'convert_map.dart';
@@ -82,6 +83,9 @@ void main(List<String> args) async {
   }
   //create kernel
   await GKernel.instance.loadColorSet(path.join(GKernel.instance.current, dataPrefix));
+  for (int i = 0; i < 8; i++) {
+    await GKernel.instance.loadColorSetCPU(path.join(GKernel.instance.current, dataPrefix), i);
+  }
   File fb = File(path.join(GKernel.instance.current, dataPrefix, 'Blocks.json'));
   await fb.readAsString().then((value) {
     GKernel.instance.blockListManager.importBlocks(value);
@@ -160,6 +164,7 @@ void main(List<String> args) async {
     }
   }
 
+  tp.Executor().warmUp(isolatesCount: 8);
   runApp(const MyApp());
 }
 

@@ -10,6 +10,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path;
+import 'package:worker_manager/worker_manager.dart' as tp;
 
 import 'kernel.dart';
 import 'scl_interface.dart';
@@ -49,13 +50,37 @@ class _ExportLitematicaState extends State<ExportLitematica> {
   final _controllerl = ScrollController();
   final _controllerr = ScrollController();
 
+  TextEditingController th = TextEditingController(text: '8');
+
   @override
   Widget build(BuildContext context) {
     Typography typography = FluentTheme.of(context).typography;
     if (GKernel.instance.multiMode) {
       return ScaffoldPage(
-        header: const PageHeader(
-          title: Text('导出为投影文件-批量模式'),
+        header: PageHeader(
+          title: const Text('导出为投影文件-批量模式'),
+          commandBar: Row(
+            children: [
+              SizedBox(
+                width: 100,
+                child: Checkbox(
+                  checked: !GKernel.instance.multiSingleThread,
+                  content: const Text('启用多线程（实验性）'),
+                  onChanged: (val) {
+                    GKernel.instance.multiSingleThread = !val!;
+                    setState(() {});
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 100,
+                child: TextBox(
+                  controller: th,
+                ),
+              ),
+            ],
+          ),
         ),
         content: Padding(
           padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
@@ -334,63 +359,160 @@ class _ExportLitematicaState extends State<ExportLitematica> {
                                               if (GKernel.instance.liteRegionName.text.isEmpty) {
                                                 GKernel.instance.liteRegionName.text = 'Pixel Paint by SlopeCraft';
                                               }
-                                              for (int i = 0; i < GKernel.instance.multiRaw.length; i++) {
-                                                // bool value = await
-                                                compute(
-                                                    exportMulti,
-                                                    ExportMultiArgs(
-                                                        convertMethod: GKernel.instance.convertMethod,
-                                                        p: GKernel.instance.multiRaw[i],
-                                                        scl_halfTpPixelSt: GKernel.instance.scl_halfTpPixelSt,
-                                                        scl_pureTpPixelSt: GKernel.instance.scl_pureTpPixelSt,
-                                                        dithering: GKernel.instance.dithering,
-                                                        liteName: GKernel.instance.liteName.text,
-                                                        liteAuthor: GKernel.instance.liteAuthor.text,
-                                                        liteRegionName: GKernel.instance.liteRegionName.text,
-                                                        bI: int.parse(GKernel.instance.maH.text),
-                                                        bridge: GKernel.instance.bridge,
-                                                        compress: GKernel.instance.compress,
-                                                        endermanProof: GKernel.instance.endermanProof,
-                                                        exportType: GKernel.instance.exportType,
-                                                        fireProof: GKernel.instance.fireProof,
-                                                        maH: int.parse(GKernel.instance.maH.text),
-                                                        backgroundColor: GKernel.instance.backgroundColor));
-                                                // if (!value) {
-                                                //   GKernel.instance.multiFail.add(GKernel.instance.multiRaw[i]);
-                                                // }
-                                                // GKernel.instance.multiProgress = i / GKernel.instance.multiRaw.length * 100;
-                                                // if (1 % 10 == 0) {
-                                                //   setState(() {});
-                                                // }
-                                              }
-                                              for (int i = 0; i < GKernel.instance.multiDir.length; i++) {
-                                                Directory dir = Directory(GKernel.instance.multiDir[i]);
-                                                Stream<FileSystemEntity> entityList = dir.list(recursive: false, followLinks: false);
-                                                await for (FileSystemEntity entity in entityList) {
-                                                  if (entity.statSync().type == FileSystemEntityType.file &&
-                                                      ['.png', '.bmp', '.jpeg', '.jpg', '.tga', '.webp', '.tiff'].contains(path.extension(entity.path))) {
-                                                    if (!exportMulti(ExportMultiArgs(
-                                                        convertMethod: GKernel.instance.convertMethod,
-                                                        p: entity.path,
-                                                        scl_halfTpPixelSt: GKernel.instance.scl_halfTpPixelSt,
-                                                        scl_pureTpPixelSt: GKernel.instance.scl_pureTpPixelSt,
-                                                        dithering: GKernel.instance.dithering,
-                                                        liteName: GKernel.instance.liteName.text,
-                                                        liteAuthor: GKernel.instance.liteAuthor.text,
-                                                        liteRegionName: GKernel.instance.liteRegionName.text,
-                                                        bI: int.parse(GKernel.instance.maH.text),
-                                                        bridge: GKernel.instance.bridge,
-                                                        compress: GKernel.instance.compress,
-                                                        endermanProof: GKernel.instance.endermanProof,
-                                                        exportType: GKernel.instance.exportType,
-                                                        fireProof: GKernel.instance.fireProof,
-                                                        maH: int.parse(GKernel.instance.maH.text),
-                                                        backgroundColor: GKernel.instance.backgroundColor))) {
-                                                      GKernel.instance.multiFail.add(entity.path);
+                                              var t0 = DateTime.now();
+                                              GKernel.instance.threads = int.parse(th.text);
+                                              if (GKernel.instance.multiSingleThread) {
+                                                for (int i = 0; i < GKernel.instance.multiRaw.length; i++) {
+                                                  var r = await tp.Executor().execute(
+                                                      fun1: exportMultiSingle,
+                                                      arg1: ExportMultiArgs(
+                                                          cpuid: -1,
+                                                          convertMethod: GKernel.instance.convertMethod,
+                                                          p: GKernel.instance.multiRaw[i],
+                                                          scl_halfTpPixelSt: GKernel.instance.scl_halfTpPixelSt,
+                                                          scl_pureTpPixelSt: GKernel.instance.scl_pureTpPixelSt,
+                                                          dithering: GKernel.instance.dithering,
+                                                          liteName: GKernel.instance.liteName.text,
+                                                          liteAuthor: GKernel.instance.liteAuthor.text,
+                                                          liteRegionName: GKernel.instance.liteRegionName.text,
+                                                          bI: int.parse(GKernel.instance.maH.text),
+                                                          bridge: GKernel.instance.bridge,
+                                                          compress: GKernel.instance.compress,
+                                                          endermanProof: GKernel.instance.endermanProof,
+                                                          exportType: GKernel.instance.exportType,
+                                                          fireProof: GKernel.instance.fireProof,
+                                                          maH: int.parse(GKernel.instance.maH.text),
+                                                          backgroundColor: GKernel.instance.backgroundColor));
+                                                  if (!r.s) {
+                                                    GKernel.instance.multiFail.add(r.p);
+                                                  }
+                                                }
+                                                for (int i = 0; i < GKernel.instance.multiDir.length; i++) {
+                                                  Directory dir = Directory(GKernel.instance.multiDir[i]);
+                                                  Stream<FileSystemEntity> entityList = dir.list(recursive: false, followLinks: false);
+                                                  await for (FileSystemEntity entity in entityList) {
+                                                    if (entity.statSync().type == FileSystemEntityType.file &&
+                                                        ['.png', '.bmp', '.jpeg', '.jpg', '.tga', '.webp', '.tiff'].contains(path.extension(entity.path))) {
+                                                      var r = await tp.Executor().execute(
+                                                          fun1: exportMultiSingle,
+                                                          arg1: ExportMultiArgs(
+                                                              cpuid: -1,
+                                                              convertMethod: GKernel.instance.convertMethod,
+                                                              p: entity.path,
+                                                              scl_halfTpPixelSt: GKernel.instance.scl_halfTpPixelSt,
+                                                              scl_pureTpPixelSt: GKernel.instance.scl_pureTpPixelSt,
+                                                              dithering: GKernel.instance.dithering,
+                                                              liteName: GKernel.instance.liteName.text,
+                                                              liteAuthor: GKernel.instance.liteAuthor.text,
+                                                              liteRegionName: GKernel.instance.liteRegionName.text,
+                                                              bI: int.parse(GKernel.instance.maH.text),
+                                                              bridge: GKernel.instance.bridge,
+                                                              compress: GKernel.instance.compress,
+                                                              endermanProof: GKernel.instance.endermanProof,
+                                                              exportType: GKernel.instance.exportType,
+                                                              fireProof: GKernel.instance.fireProof,
+                                                              maH: int.parse(GKernel.instance.maH.text),
+                                                              backgroundColor: GKernel.instance.backgroundColor));
+                                                      if (!r.s) {
+                                                        GKernel.instance.multiFail.add(r.p);
+                                                      }
                                                     }
                                                   }
                                                 }
+                                              } else {
+                                                int threads = GKernel.instance.threads;
+                                                List<tp.Cancelable<ExportMultiReturn>?> t = List.filled(threads, null);
+                                                for (int i = 0; i < GKernel.instance.multiRaw.length; i++) {
+                                                  if (t[i % threads] != null) {
+                                                    var r = await t[i % threads];
+                                                    if (r != null) {
+                                                      if (!r.s) {
+                                                        GKernel.instance.multiFail.add(r.p);
+                                                      }
+                                                    }
+                                                  }
+                                                  t[i % threads] = tp.Executor().execute(
+                                                      fun1: exportMulti,
+                                                      arg1: ExportMultiArgs(
+                                                          cpuid: i % threads,
+                                                          convertMethod: GKernel.instance.convertMethod,
+                                                          p: GKernel.instance.multiRaw[i],
+                                                          scl_halfTpPixelSt: GKernel.instance.scl_halfTpPixelSt,
+                                                          scl_pureTpPixelSt: GKernel.instance.scl_pureTpPixelSt,
+                                                          dithering: GKernel.instance.dithering,
+                                                          liteName: GKernel.instance.liteName.text,
+                                                          liteAuthor: GKernel.instance.liteAuthor.text,
+                                                          liteRegionName: GKernel.instance.liteRegionName.text,
+                                                          bI: int.parse(GKernel.instance.maH.text),
+                                                          bridge: GKernel.instance.bridge,
+                                                          compress: GKernel.instance.compress,
+                                                          endermanProof: GKernel.instance.endermanProof,
+                                                          exportType: GKernel.instance.exportType,
+                                                          fireProof: GKernel.instance.fireProof,
+                                                          maH: int.parse(GKernel.instance.maH.text),
+                                                          backgroundColor: GKernel.instance.backgroundColor));
+                                                }
+                                                for (int i = 0; i < GKernel.instance.multiDir.length; i++) {
+                                                  Directory dir = Directory(GKernel.instance.multiDir[i]);
+                                                  Stream<FileSystemEntity> entityList = dir.list(recursive: false, followLinks: false);
+                                                  await for (FileSystemEntity entity in entityList) {
+                                                    if (entity.statSync().type == FileSystemEntityType.file &&
+                                                        ['.png', '.bmp', '.jpeg', '.jpg', '.tga', '.webp', '.tiff'].contains(path.extension(entity.path))) {
+                                                      if (t[i % threads] != null) {
+                                                        var r = await t[i % threads];
+                                                        if (r != null) {
+                                                          if (!r.s) {
+                                                            GKernel.instance.multiFail.add(r.p);
+                                                          }
+                                                        }
+                                                      }
+                                                      t[i % 8] = tp.Executor().execute(
+                                                          fun1: exportMulti,
+                                                          arg1: ExportMultiArgs(
+                                                              cpuid: i % threads,
+                                                              convertMethod: GKernel.instance.convertMethod,
+                                                              p: entity.path,
+                                                              scl_halfTpPixelSt: GKernel.instance.scl_halfTpPixelSt,
+                                                              scl_pureTpPixelSt: GKernel.instance.scl_pureTpPixelSt,
+                                                              dithering: GKernel.instance.dithering,
+                                                              liteName: GKernel.instance.liteName.text,
+                                                              liteAuthor: GKernel.instance.liteAuthor.text,
+                                                              liteRegionName: GKernel.instance.liteRegionName.text,
+                                                              bI: int.parse(GKernel.instance.maH.text),
+                                                              bridge: GKernel.instance.bridge,
+                                                              compress: GKernel.instance.compress,
+                                                              endermanProof: GKernel.instance.endermanProof,
+                                                              exportType: GKernel.instance.exportType,
+                                                              fireProof: GKernel.instance.fireProof,
+                                                              maH: int.parse(GKernel.instance.maH.text),
+                                                              backgroundColor: GKernel.instance.backgroundColor));
+                                                    }
+                                                  }
+                                                }
+                                                for (int i = 0; i < threads; i++) {
+                                                  if (t[i] != null) {
+                                                    await t[i];
+                                                  }
+                                                }
                                               }
+                                              var t1 = DateTime.now();
+                                              showDialog(
+                                                context: context,
+                                                builder: (context) {
+                                                  return ContentDialog(
+                                                    title: const Text('完成'),
+                                                    content: Text('${t1.difference(t0).inSeconds}s'),
+                                                    actions: [
+                                                      Button(
+                                                        child: const Text('确定'),
+                                                        onPressed: () {
+                                                          Navigator.pop(context);
+                                                        },
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              );
                                               GKernel.instance.setType(context, true);
                                               GKernel.instance.building = false;
                                               GKernel.instance.multiProgress = 100.0;

@@ -54,6 +54,7 @@ dependencies:
   excel: 2.0.0-null-safety
   win32: ^2.4.4
   enough_convert: ^1.4.0
+  worker_manager: ^4.2.6
 
 dev_dependencies:
   flutter_test:

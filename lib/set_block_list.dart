@@ -347,6 +347,9 @@ class _SetBlockListState extends State<SetBlockList> {
                             child: const Text('保存设置'),
                             onPressed: () async {
                               await GKernel.instance.setType(context);
+                              for (int i = 0; i < 8; i++) {
+                                await GKernel.instance.setTypeCPU(context, i);
+                              }
                               GKernel.instance.index.value = 2;
                             })
                       ],

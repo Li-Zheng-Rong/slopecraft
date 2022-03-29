@@ -35,13 +35,15 @@ class ExportMultiArgs {
       required this.exportType,
       required this.fireProof,
       required this.maH,
-      required this.backgroundColor});
+      required this.backgroundColor,
+      required this.cpuid});
   String convertMethod, p;
 
   // ignore: non_constant_identifier_names
   int scl_pureTpPixelSt;
   // ignore: non_constant_identifier_names
   int scl_halfTpPixelSt;
+  int cpuid;
   bool dithering;
   String liteName;
   String liteAuthor;
@@ -54,6 +56,12 @@ class ExportMultiArgs {
   bool fireProof;
   bool endermanProof;
   Color backgroundColor;
+}
+
+class ExportMultiReturn {
+  ExportMultiReturn({required this.p, required this.s});
+  String p;
+  bool s;
 }
 
 class BlockListInfo {
@@ -422,7 +430,18 @@ class GKernel {
   Color backgroundColor = const Color.fromARGB(255, 220, 220, 220);
   int mapType = 0;
   String gameVersion = '1.18';
+  bool multiSingleThread = false;
   SlopeCraftL scl = SlopeCraftL(DynamicLibrary.open('slopecraft.dll'));
+  List<SlopeCraftL> sclcpu = [
+    SlopeCraftL(DynamicLibrary.open('slopecraft cpu0.dll')),
+    SlopeCraftL(DynamicLibrary.open('slopecraft cpu1.dll')),
+    SlopeCraftL(DynamicLibrary.open('slopecraft cpu2.dll')),
+    SlopeCraftL(DynamicLibrary.open('slopecraft cpu3.dll')),
+    SlopeCraftL(DynamicLibrary.open('slopecraft cpu4.dll')),
+    SlopeCraftL(DynamicLibrary.open('slopecraft cpu5.dll')),
+    SlopeCraftL(DynamicLibrary.open('slopecraft cpu6.dll')),
+    SlopeCraftL(DynamicLibrary.open('slopecraft cpu7.dll')),
+  ];
   File picture = File('');
   // ignore: non_constant_identifier_names
   int scl_pureTpPixelSt = SCL_PureTpPixelSt.ReplaceWithBackGround;
@@ -466,6 +485,7 @@ class GKernel {
   int dy = 0;
   int dz = 0;
   img.Image? rawImage;
+  int threads = 8;
   int imgHeight = 0;
   int imgWidth = 0;
   bool rawneedreset = false;
@@ -631,6 +651,130 @@ class GKernel {
     }
   }
 
+  Future<void> setTypeCPU(BuildContext context, int cpuid, [bool silence = false]) async {
+    if (sclcpu[cpuid].SCL_queryStep() < step.colorSetReady) {
+      await showDialog(
+        context: context,
+        builder: (context) {
+          return ContentDialog(
+            title: const Text('错误'),
+            content: const Text('不能跳步操作'),
+            actions: [
+              SizedBox(
+                width: 150,
+                child: FilledButton(
+                  child: const Text('确定'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+    Pointer<Uint8> ena = ffi.calloc.allocate(sizeOf<Uint8>() * 64);
+
+    for (int i = 0; i < 64; i++) {
+      //基色无效
+      if (blockListManager.getBlockList(version: int.parse(gameVersion.replaceAll('.', '')) - 100, baseColor: i).isEmpty) {
+        ena.elementAt(i).value = 0;
+      }
+      //基色已禁用
+      else if (!blockListManager.isEnabled(baseColor: i)) {
+        ena.elementAt(i).value = 0;
+      }
+      //未选择方块
+      else if (blockListManager.selected(baseColor: i) == null) {
+        ena.elementAt(i).value = 0;
+      } else {
+        ena.elementAt(i).value = 1;
+      }
+    }
+
+    Pointer<Pointer<AbstractBlock>> ab = ffi.calloc.allocate(sizeOf<Pointer<AbstractBlock>>() * 64);
+    for (int i = 0; i < 64; i++) {
+      Block b;
+      //基色无效
+      if (blockListManager.getBlockList(version: int.parse(gameVersion.replaceAll('.', '')) - 100, baseColor: i).isEmpty) {
+        b = blockListManager.getBlockList(version: 114514, baseColor: 0)[0];
+      }
+      //未选择方块
+      else if (blockListManager.selected(baseColor: i) == null) {
+        await showDialog(
+          context: context,
+          builder: (context) {
+            return ContentDialog(
+              title: const Text('配置未完成'),
+              content: const Text('你没有为某些基色选择方块'),
+              actions: [
+                SizedBox(
+                  width: 150,
+                  child: FilledButton(
+                    child: const Text('确定'),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+        return;
+      } else {
+        b = blockListManager.selected(baseColor: i)!;
+      }
+      ab.elementAt(i).value = sclcpu[cpuid].SCL_createBlock();
+      sclcpu[cpuid].SCL_setId(ab.elementAt(i).value, b.id.toNativeUtf8().cast());
+      sclcpu[cpuid].SCL_setVersion(ab.elementAt(i).value, b.version);
+      sclcpu[cpuid].SCL_setIdOld(ab.elementAt(i).value, (b.idOld ?? '').toNativeUtf8().cast());
+      sclcpu[cpuid].SCL_setNeedGlass(ab.elementAt(i).value, b.needGlass ?? false);
+      sclcpu[cpuid].SCL_setDoGlow(ab.elementAt(i).value, b.isGlowing ?? false);
+      sclcpu[cpuid].SCL_setEndermanPickable(ab.elementAt(i).value, b.endermanPickable ?? false);
+      sclcpu[cpuid].SCL_setBurnable(ab.elementAt(i).value, b.burnable ?? false);
+      sclcpu[cpuid].SCL_setWallUseable(ab.elementAt(i).value, b.wallUseable ?? false);
+    }
+    sclcpu[cpuid].SCL_setType(mapType, int.parse(gameVersion.replaceAll('.', '')) - 100, ena, ab);
+    for (int i = 0; i < 64; i++) {
+      sclcpu[cpuid].SCL_destroyBlock(ab.elementAt(i).value);
+    }
+    if (sclcpu[cpuid].SCL_queryStep() < step.wait4Image) {
+      await showDialog(
+        context: context,
+        builder: (context) {
+          return ContentDialog(
+            title: const Text('设置保存失败'),
+            content: const Text('未知错误'),
+            actions: [
+              SizedBox(
+                width: 150,
+                child: FilledButton(
+                  child: const Text('确定'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+    if (!silence) {
+      showSnackbar(
+        context,
+        const Snackbar(
+          content: Text('设置保存成功!'),
+        ),
+      );
+      index.value = 2;
+    }
+  }
+
   Future<void> loadColorSet(String p) async {
     File rgb = File(path.join(p, 'RGB.TokiColor'));
     if (!(await rgb.exists())) {
@@ -653,6 +797,31 @@ class GKernel {
     }
     String xyzs = await xyz.readAsString();
     scl.SCL_setColorSet(rgbs.toNativeUtf8().cast<Int8>(), hsvs.toNativeUtf8().cast<Int8>(), labs.toNativeUtf8().cast<Int8>(), xyzs.toNativeUtf8().cast<Int8>());
+  }
+
+  Future<void> loadColorSetCPU(String p, int cpuid) async {
+    File rgb = File(path.join(p, 'RGB.TokiColor'));
+    if (!(await rgb.exists())) {
+      return;
+    }
+    String rgbs = await rgb.readAsString();
+    File hsv = File(path.join(p, 'HSV.TokiColor'));
+    if (!(await hsv.exists())) {
+      return;
+    }
+    String hsvs = await hsv.readAsString();
+    File lab = File(path.join(p, 'Lab.TokiColor'));
+    if (!(await lab.exists())) {
+      return;
+    }
+    String labs = await lab.readAsString();
+    File xyz = File(path.join(p, 'XYZ.TokiColor'));
+    if (!(await xyz.exists())) {
+      return;
+    }
+    String xyzs = await xyz.readAsString();
+    sclcpu[cpuid].SCL_setColorSet(
+        rgbs.toNativeUtf8().cast<Int8>(), hsvs.toNativeUtf8().cast<Int8>(), labs.toNativeUtf8().cast<Int8>(), xyzs.toNativeUtf8().cast<Int8>());
   }
 
   Future<void> setRawImage(BuildContext context, bool silence) async {
@@ -859,14 +1028,14 @@ class GKernel {
   }
 }
 
-bool exportMulti(ExportMultiArgs args) {
+ExportMultiReturn exportMulti(ExportMultiArgs args) {
   img.Image? multiRawCache;
   File pictureC = File('');
   int imgHeightC = 0;
   int imgWidthC = 0;
   //import picture
   if (File(args.p).existsSync() == false) {
-    return false;
+    return ExportMultiReturn(s: false, p: args.p);
   }
 
   pictureC = File(args.p);
@@ -875,7 +1044,108 @@ bool exportMulti(ExportMultiArgs args) {
   multiRawCache = img.decodeNamedImage(f, path.extension(pictureC.path));
   //setRawImage
   if (multiRawCache == null) {
-    return false;
+    return ExportMultiReturn(s: false, p: args.p);
+  }
+  imgHeightC = multiRawCache.height;
+  imgWidthC = multiRawCache.width;
+  var d = multiRawCache.getBytes(format: img.Format.argb);
+
+  Pointer<Uint32> pointer = ffi.calloc.allocate(sizeOf<Uint32>() * multiRawCache.length);
+  for (int h = 0; h < imgHeightC; h++) {
+    for (int w = 0; w < imgWidthC; w++) {
+      int i = h * imgWidthC + w;
+      pointer[w * imgHeightC + h] = d[i * 4] << 24 | d[i * 4 + 1] << 16 | d[i * 4 + 2] << 8 | d[i * 4 + 3];
+    }
+  }
+  GKernel.instance.sclcpu[args.cpuid]
+      .SCL_preprocessImage(pointer, multiRawCache.length, args.scl_pureTpPixelSt, args.scl_halfTpPixelSt, args.backgroundColor.value);
+
+  GKernel.instance.sclcpu[args.cpuid].SCL_setRawImage(pointer, imgHeightC, imgWidthC);
+
+  ffi.calloc.free(pointer);
+  if (GKernel.instance.sclcpu[args.cpuid].SCL_queryStep() < step.convertionReady) {
+    return ExportMultiReturn(s: false, p: args.p);
+  }
+  //convert
+  switch (args.convertMethod) {
+    case 'RGB':
+      if (!GKernel.instance.sclcpu[args.cpuid].SCL_convert(convertAlgo.RGB, args.dithering)) {
+        return ExportMultiReturn(s: false, p: args.p);
+      }
+      break;
+    case 'RGB+':
+      if (!GKernel.instance.sclcpu[args.cpuid].SCL_convert(convertAlgo.RGB_Better, args.dithering)) {
+        return ExportMultiReturn(s: false, p: args.p);
+      }
+      break;
+    case 'HSV':
+      if (!GKernel.instance.sclcpu[args.cpuid].SCL_convert(convertAlgo.HSV, args.dithering)) {
+        return ExportMultiReturn(s: false, p: args.p);
+      }
+      break;
+    case 'Lab94':
+      if (!GKernel.instance.sclcpu[args.cpuid].SCL_convert(convertAlgo.Lab94, args.dithering)) {
+        return ExportMultiReturn(s: false, p: args.p);
+      }
+      break;
+    case 'Lab00':
+      if (!GKernel.instance.sclcpu[args.cpuid].SCL_convert(convertAlgo.Lab00, args.dithering)) {
+        return ExportMultiReturn(s: false, p: args.p);
+      }
+      break;
+    case 'XYZ':
+      if (!GKernel.instance.sclcpu[args.cpuid].SCL_convert(convertAlgo.XYZ, args.dithering)) {
+        return ExportMultiReturn(s: false, p: args.p);
+      }
+      break;
+    case 'AiCvter':
+      if (!GKernel.instance.sclcpu[args.cpuid].SCL_convert(convertAlgo.AiCvter, args.dithering)) {
+        return ExportMultiReturn(s: false, p: args.p);
+      }
+      break;
+    default:
+      return ExportMultiReturn(s: false, p: args.p);
+  }
+  if (args.exportType == ExportType.litematica || args.exportType == ExportType.structure) {
+    GKernel.instance.sclcpu[args.cpuid].SCL_build(args.compress, args.maH, args.bridge, args.bI, args.fireProof, args.endermanProof);
+  }
+
+  if (GKernel.instance.sclcpu[args.cpuid].SCL_queryStep() < step.builded) {
+    return ExportMultiReturn(s: false, p: args.p);
+  }
+  if (args.exportType == ExportType.litematica) {
+    String? outputFile = path.setExtension(args.p, '.litematic');
+    final gbk = const GbkCodec(allowInvalid: false).encode(outputFile);
+
+    Pointer<Int8> pg = ffi.calloc.call(gbk.length + 1);
+    for (int i = 0; i < gbk.length; i++) {
+      pg.elementAt(i).value = gbk[i];
+    }
+    pg.elementAt(gbk.length).value = 0;
+    GKernel.instance.sclcpu[args.cpuid].SCL_exportAsLitematic(
+        pg, args.liteName.toNativeUtf8().cast(), args.liteAuthor.toNativeUtf8().cast(), args.liteRegionName.toNativeUtf8().cast(), nullptr);
+    return ExportMultiReturn(s: true, p: args.p);
+  }
+  return ExportMultiReturn(s: false, p: args.p);
+}
+
+ExportMultiReturn exportMultiSingle(ExportMultiArgs args) {
+  img.Image? multiRawCache;
+  File pictureC = File('');
+  int imgHeightC = 0;
+  int imgWidthC = 0;
+  //import picture
+  if (File(args.p).existsSync() == false) {
+    return ExportMultiReturn(s: false, p: args.p);
+  }
+
+  pictureC = File(args.p);
+
+  List<int> f = pictureC.readAsBytesSync();
+  multiRawCache = img.decodeNamedImage(f, path.extension(pictureC.path));
+  //setRawImage
+  if (multiRawCache == null) {
+    return ExportMultiReturn(s: false, p: args.p);
   }
   imgHeightC = multiRawCache.height;
   imgWidthC = multiRawCache.width;
@@ -894,54 +1164,54 @@ bool exportMulti(ExportMultiArgs args) {
 
   ffi.calloc.free(pointer);
   if (GKernel.instance.scl.SCL_queryStep() < step.convertionReady) {
-    return false;
+    return ExportMultiReturn(s: false, p: args.p);
   }
   //convert
   switch (args.convertMethod) {
     case 'RGB':
       if (!GKernel.instance.scl.SCL_convert(convertAlgo.RGB, args.dithering)) {
-        return false;
+        return ExportMultiReturn(s: false, p: args.p);
       }
       break;
     case 'RGB+':
       if (!GKernel.instance.scl.SCL_convert(convertAlgo.RGB_Better, args.dithering)) {
-        return false;
+        return ExportMultiReturn(s: false, p: args.p);
       }
       break;
     case 'HSV':
       if (!GKernel.instance.scl.SCL_convert(convertAlgo.HSV, args.dithering)) {
-        return false;
+        return ExportMultiReturn(s: false, p: args.p);
       }
       break;
     case 'Lab94':
       if (!GKernel.instance.scl.SCL_convert(convertAlgo.Lab94, args.dithering)) {
-        return false;
+        return ExportMultiReturn(s: false, p: args.p);
       }
       break;
     case 'Lab00':
       if (!GKernel.instance.scl.SCL_convert(convertAlgo.Lab00, args.dithering)) {
-        return false;
+        return ExportMultiReturn(s: false, p: args.p);
       }
       break;
     case 'XYZ':
       if (!GKernel.instance.scl.SCL_convert(convertAlgo.XYZ, args.dithering)) {
-        return false;
+        return ExportMultiReturn(s: false, p: args.p);
       }
       break;
     case 'AiCvter':
       if (!GKernel.instance.scl.SCL_convert(convertAlgo.AiCvter, args.dithering)) {
-        return false;
+        return ExportMultiReturn(s: false, p: args.p);
       }
       break;
     default:
-      return false;
+      return ExportMultiReturn(s: false, p: args.p);
   }
   if (args.exportType == ExportType.litematica || args.exportType == ExportType.structure) {
     GKernel.instance.scl.SCL_build(args.compress, args.maH, args.bridge, args.bI, args.fireProof, args.endermanProof);
   }
 
   if (GKernel.instance.scl.SCL_queryStep() < step.builded) {
-    return false;
+    return ExportMultiReturn(s: false, p: args.p);
   }
   if (args.exportType == ExportType.litematica) {
     String? outputFile = path.setExtension(args.p, '.litematic');
@@ -954,7 +1224,7 @@ bool exportMulti(ExportMultiArgs args) {
     pg.elementAt(gbk.length).value = 0;
     GKernel.instance.scl.SCL_exportAsLitematic(
         pg, args.liteName.toNativeUtf8().cast(), args.liteAuthor.toNativeUtf8().cast(), args.liteRegionName.toNativeUtf8().cast(), nullptr);
-    return true;
+    return ExportMultiReturn(s: true, p: args.p);
   }
-  return false;
+  return ExportMultiReturn(s: false, p: args.p);
 }
