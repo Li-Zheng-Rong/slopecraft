@@ -53,6 +53,7 @@ dependencies:
   desktop_drop: ^0.3.3
   excel: 2.0.0-null-safety
   win32: ^2.4.4
+  enough_convert: ^1.4.0
 
 dev_dependencies:
   flutter_test:

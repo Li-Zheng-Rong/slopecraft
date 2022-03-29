@@ -348,7 +348,6 @@ class _SetBlockListState extends State<SetBlockList> {
                             onPressed: () async {
                               await GKernel.instance.setType(context);
                               GKernel.instance.index.value = 2;
-                              // GKernel.instance.setStateFunc(() {});
                             })
                       ],
                     ),

@@ -2,6 +2,7 @@ import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:enough_convert/enough_convert.dart';
 import 'package:ffi/ffi.dart' as ffi;
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:image/image.dart' as img;
@@ -14,6 +15,46 @@ import 'count_convert.dart';
 import 'scl_interface.dart';
 
 const String dataPrefix = 'SCData';
+
+class ExportMultiArgs {
+  ExportMultiArgs(
+      {required this.convertMethod,
+      required this.p,
+      // ignore: non_constant_identifier_names
+      required this.scl_halfTpPixelSt,
+      // ignore: non_constant_identifier_names
+      required this.scl_pureTpPixelSt,
+      required this.dithering,
+      required this.liteName,
+      required this.liteAuthor,
+      required this.liteRegionName,
+      required this.bI,
+      required this.bridge,
+      required this.compress,
+      required this.endermanProof,
+      required this.exportType,
+      required this.fireProof,
+      required this.maH,
+      required this.backgroundColor});
+  String convertMethod, p;
+
+  // ignore: non_constant_identifier_names
+  int scl_pureTpPixelSt;
+  // ignore: non_constant_identifier_names
+  int scl_halfTpPixelSt;
+  bool dithering;
+  String liteName;
+  String liteAuthor;
+  String liteRegionName;
+  ExportType exportType;
+  int compress;
+  int maH;
+  int bridge;
+  int bI;
+  bool fireProof;
+  bool endermanProof;
+  Color backgroundColor;
+}
 
 class BlockListInfo {
   BlockListInfo({required this.name, required this.info, required this.set});
@@ -395,6 +436,7 @@ class GKernel {
   bool dithering = false;
   String convertMethod = 'RGB+';
   int? height, width;
+  double multiProgress = 0.0;
   Image? convertedImage = Image.file(
     File(path.join(dataPrefix, 'transparent.png')),
     cacheHeight: 1,
@@ -406,6 +448,7 @@ class GKernel {
     cacheWidth: 1,
   );
   Image? show;
+  bool building = false;
   int compress = compressSettings.Both;
   TextEditingController maH = TextEditingController(text: '255');
   int bridge = glassBridgeSettings.noBridge;
@@ -417,6 +460,8 @@ class GKernel {
   TextEditingController liteAuthor = TextEditingController(text: 'SlopeCraft');
   TextEditingController liteRegionName = TextEditingController(text: 'Pixel Paint by SlopeCraft');
   TextEditingController mapIndex = TextEditingController(text: '0');
+  TextEditingController multiExportFile = TextEditingController(text: '\${PICTURE_PARENT_PATH}/\${PICTURE_BASENAME}');
+  List<String> multiFail = [];
   int dx = 0;
   int dy = 0;
   int dz = 0;
@@ -430,16 +475,13 @@ class GKernel {
   List<Item> blocksLeft = [];
   List<Item> blocksRight = [];
   double titleBarHeight = 0;
-  List<String> multiPath = [];
-  List<String> multiPathDir = [];
-  List<String> multiPathRaw = [];
   List<String> multiDir = [];
   void getBlockCounts() {
     blocks.clear();
     blocksLeft.clear();
     blocksRight.clear();
-    Pointer<Int32> total = ffi.malloc.call(1);
-    Pointer<Int32> detail = ffi.malloc.call(64);
+    Pointer<Int32> total = ffi.calloc.call(1);
+    Pointer<Int32> detail = ffi.calloc.call(64);
     scl.SCL_getBlockCountsInTypes(total, detail);
     for (int i = 0; i < 64; i++) {
       if (detail.elementAt(i).value > 0) {
@@ -448,12 +490,12 @@ class GKernel {
             count: c,
             name: blockListManager.selected(baseColor: i)!.nameZH,
             image: Image.file(
-              File(blockListManager.iconPath[GKernel.instance.blockListManager.selected(baseColor: i)!.icon] ?? path.join(current, dataPrefix, 'missing.png')),
+              File(blockListManager.iconPath[blockListManager.selected(baseColor: i)!.icon] ?? path.join(current, dataPrefix, 'missing.png')),
             ),
             countb: convert(i == 12)(c)));
       }
     }
-    GKernel.instance.blocks.sort(((a, b) {
+    blocks.sort(((a, b) {
       return b.count - a.count;
     }));
     for (int i = 0; i < blocks.length; i++) {
@@ -489,7 +531,7 @@ class GKernel {
       );
       return;
     }
-    Pointer<Uint8> ena = ffi.malloc.allocate(sizeOf<Uint8>() * 64);
+    Pointer<Uint8> ena = ffi.calloc.allocate(sizeOf<Uint8>() * 64);
 
     for (int i = 0; i < 64; i++) {
       //基色无效
@@ -508,7 +550,7 @@ class GKernel {
       }
     }
 
-    Pointer<Pointer<AbstractBlock>> ab = ffi.malloc.allocate(sizeOf<Pointer<AbstractBlock>>() * 64);
+    Pointer<Pointer<AbstractBlock>> ab = ffi.calloc.allocate(sizeOf<Pointer<AbstractBlock>>() * 64);
     for (int i = 0; i < 64; i++) {
       Block b;
       //基色无效
@@ -639,7 +681,7 @@ class GKernel {
     width = null;
     var d = rawImage!.getBytes(format: img.Format.argb);
 
-    Pointer<Uint32> pointer = ffi.malloc.allocate(sizeOf<Uint32>() * rawImage!.length);
+    Pointer<Uint32> pointer = ffi.calloc.allocate(sizeOf<Uint32>() * rawImage!.length);
     for (int h = 0; h < imgHeight; h++) {
       for (int w = 0; w < imgWidth; w++) {
         int i = h * imgWidth + w;
@@ -650,7 +692,7 @@ class GKernel {
 
     scl.SCL_setRawImage(pointer, imgHeight, imgWidth);
 
-    ffi.malloc.free(pointer);
+    ffi.calloc.free(pointer);
     if (scl.SCL_queryStep() < step.convertionReady) {
       await showDialog(
         context: context,
@@ -695,14 +737,14 @@ class GKernel {
   void getConvertedImage() {
     Pointer<Int16> rows = nullptr, cols = nullptr;
     Pointer<Uint32> dest = nullptr;
-    rows = ffi.malloc.allocate(2);
-    cols = ffi.malloc.allocate(2);
+    rows = ffi.calloc.allocate(2);
+    cols = ffi.calloc.allocate(2);
     if (width == null || height == null) {
       scl.SCL_getConvertedImage(rows, cols, dest);
       width = cols.value;
       height = rows.value;
     }
-    dest = ffi.malloc.allocate(width! * height! * 4);
+    dest = ffi.calloc.allocate(width! * height! * 4);
     scl.SCL_getConvertedImage(rows, cols, dest);
     Uint32List bytes = Uint32List(width! * height!);
     for (int i = 0; i < width! * height!; i++) {
@@ -721,15 +763,15 @@ class GKernel {
       Uint8List.fromList(img.encodeBmp(image)),
       fit: BoxFit.contain,
     );
-    ffi.malloc.free(rows);
-    ffi.malloc.free(cols);
-    ffi.malloc.free(dest);
+    ffi.calloc.free(rows);
+    ffi.calloc.free(cols);
+    ffi.calloc.free(dest);
   }
 
   Future<void> importMultiImage(BuildContext context, List<String> p) async {
     int failed = 0;
     for (var item in p) {
-      if (path.extension(item) == '') {
+      if (FileStat.statSync(item).type == FileSystemEntityType.directory) {
         if (multiDir.contains(item)) {
           failed++;
         } else {
@@ -737,8 +779,7 @@ class GKernel {
         }
       } else {
         if (!multiRaw.contains(item)) {
-          bool value = File(item).existsSync();
-          if (value) {
+          if (FileStat.statSync(item).type == FileSystemEntityType.file) {
             var picture = File(item);
             if (['.png', '.bmp', '.jpeg', '.jpg', '.tga', '.webp', '.tiff'].contains(path.extension(item))) {
               var v = picture.readAsBytesSync();
@@ -805,15 +846,115 @@ class GKernel {
       return;
     }
 
-    GKernel.instance.picture = File(p);
+    picture = File(p);
 
-    List<int> f = GKernel.instance.picture.readAsBytesSync();
-    GKernel.instance.raw = Image.file(
-      GKernel.instance.picture,
+    List<int> f = picture.readAsBytesSync();
+    raw = Image.file(
+      picture,
       fit: BoxFit.contain,
     );
-    GKernel.instance.rawImage = img.decodeNamedImage(f, path.extension(GKernel.instance.picture.path));
+    rawImage = img.decodeNamedImage(f, path.extension(picture.path));
 
-    await GKernel.instance.setRawImage(context, false);
+    await setRawImage(context, false);
   }
+}
+
+bool exportMulti(ExportMultiArgs args) {
+  img.Image? multiRawCache;
+  File pictureC = File('');
+  int imgHeightC = 0;
+  int imgWidthC = 0;
+  //import picture
+  if (File(args.p).existsSync() == false) {
+    return false;
+  }
+
+  pictureC = File(args.p);
+
+  List<int> f = pictureC.readAsBytesSync();
+  multiRawCache = img.decodeNamedImage(f, path.extension(pictureC.path));
+  //setRawImage
+  if (multiRawCache == null) {
+    return false;
+  }
+  imgHeightC = multiRawCache.height;
+  imgWidthC = multiRawCache.width;
+  var d = multiRawCache.getBytes(format: img.Format.argb);
+
+  Pointer<Uint32> pointer = ffi.calloc.allocate(sizeOf<Uint32>() * multiRawCache.length);
+  for (int h = 0; h < imgHeightC; h++) {
+    for (int w = 0; w < imgWidthC; w++) {
+      int i = h * imgWidthC + w;
+      pointer[w * imgHeightC + h] = d[i * 4] << 24 | d[i * 4 + 1] << 16 | d[i * 4 + 2] << 8 | d[i * 4 + 3];
+    }
+  }
+  GKernel.instance.scl.SCL_preprocessImage(pointer, multiRawCache.length, args.scl_pureTpPixelSt, args.scl_halfTpPixelSt, args.backgroundColor.value);
+
+  GKernel.instance.scl.SCL_setRawImage(pointer, imgHeightC, imgWidthC);
+
+  ffi.calloc.free(pointer);
+  if (GKernel.instance.scl.SCL_queryStep() < step.convertionReady) {
+    return false;
+  }
+  //convert
+  switch (args.convertMethod) {
+    case 'RGB':
+      if (!GKernel.instance.scl.SCL_convert(convertAlgo.RGB, args.dithering)) {
+        return false;
+      }
+      break;
+    case 'RGB+':
+      if (!GKernel.instance.scl.SCL_convert(convertAlgo.RGB_Better, args.dithering)) {
+        return false;
+      }
+      break;
+    case 'HSV':
+      if (!GKernel.instance.scl.SCL_convert(convertAlgo.HSV, args.dithering)) {
+        return false;
+      }
+      break;
+    case 'Lab94':
+      if (!GKernel.instance.scl.SCL_convert(convertAlgo.Lab94, args.dithering)) {
+        return false;
+      }
+      break;
+    case 'Lab00':
+      if (!GKernel.instance.scl.SCL_convert(convertAlgo.Lab00, args.dithering)) {
+        return false;
+      }
+      break;
+    case 'XYZ':
+      if (!GKernel.instance.scl.SCL_convert(convertAlgo.XYZ, args.dithering)) {
+        return false;
+      }
+      break;
+    case 'AiCvter':
+      if (!GKernel.instance.scl.SCL_convert(convertAlgo.AiCvter, args.dithering)) {
+        return false;
+      }
+      break;
+    default:
+      return false;
+  }
+  if (args.exportType == ExportType.litematica || args.exportType == ExportType.structure) {
+    GKernel.instance.scl.SCL_build(args.compress, args.maH, args.bridge, args.bI, args.fireProof, args.endermanProof);
+  }
+
+  if (GKernel.instance.scl.SCL_queryStep() < step.builded) {
+    return false;
+  }
+  if (args.exportType == ExportType.litematica) {
+    String? outputFile = path.setExtension(args.p, '.litematic');
+    final gbk = const GbkCodec(allowInvalid: false).encode(outputFile);
+
+    Pointer<Int8> pg = ffi.calloc.call(gbk.length + 1);
+    for (int i = 0; i < gbk.length; i++) {
+      pg.elementAt(i).value = gbk[i];
+    }
+    pg.elementAt(gbk.length).value = 0;
+    GKernel.instance.scl.SCL_exportAsLitematic(
+        pg, args.liteName.toNativeUtf8().cast(), args.liteAuthor.toNativeUtf8().cast(), args.liteRegionName.toNativeUtf8().cast(), nullptr);
+    return true;
+  }
+  return false;
 }

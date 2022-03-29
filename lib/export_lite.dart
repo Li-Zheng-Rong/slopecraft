@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:ffi';
 import 'dart:io';
 
+import 'package:enough_convert/enough_convert.dart';
 import 'package:excel/excel.dart';
 import 'package:ffi/ffi.dart' as ffi;
 import 'package:file_picker/file_picker.dart' as file_picker;
@@ -46,6 +48,7 @@ class _ExportLitematicaState extends State<ExportLitematica> {
 
   final _controllerl = ScrollController();
   final _controllerr = ScrollController();
+
   @override
   Widget build(BuildContext context) {
     Typography typography = FluentTheme.of(context).typography;
@@ -56,656 +59,363 @@ class _ExportLitematicaState extends State<ExportLitematica> {
         ),
         content: Padding(
           padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(
-                child: RepaintBoundary(
-                  child: Card(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        TextBox(
-                          header: '投影作者',
-                          placeholder: 'SlopeCraft',
-                          controller: GKernel.instance.liteAuthor,
-                        ),
-                        const SizedBox(height: 8),
-                        TextBox(
-                          header: '投影区域名称',
-                          placeholder: 'Pixel Paint by SlopeCraft',
-                          controller: GKernel.instance.liteRegionName,
-                        ),
-                        const SizedBox(height: 8),
-                        const Divider(),
-                        const SizedBox(height: 8),
-                        Flyout(
-                          controller: _optiFlyoutController,
-                          contentWidth: 300,
-                          content: StatefulBuilder(
-                            builder: (context, setState) {
-                              return FlyoutContent(
-                                child: InfoLabel(
-                                  label: '压缩高度',
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                                    children: [
-                                      Checkbox(
-                                        checked:
-                                            GKernel.instance.compress == compressSettings.Both || GKernel.instance.compress == compressSettings.NaturalOnly,
-                                        onChanged: (value) => setState(() {
-                                          if (value == true) {
-                                            if (GKernel.instance.compress == compressSettings.noCompress) {
-                                              GKernel.instance.compress = compressSettings.NaturalOnly;
-                                            } else {
-                                              GKernel.instance.compress = compressSettings.Both;
-                                            }
-                                          } else {
-                                            if (GKernel.instance.compress == compressSettings.Both) {
-                                              GKernel.instance.compress = compressSettings.ForcedOnly;
-                                            } else {
-                                              GKernel.instance.compress = compressSettings.noCompress;
-                                            }
-                                          }
-                                        }),
-                                        content: const Text('无损压缩'),
-                                      ),
-                                      Checkbox(
-                                        checked: GKernel.instance.compress == compressSettings.Both || GKernel.instance.compress == compressSettings.ForcedOnly,
-                                        onChanged: (value) => setState(() {
-                                          if (value == true) {
-                                            if (GKernel.instance.compress == compressSettings.noCompress) {
-                                              GKernel.instance.compress = compressSettings.ForcedOnly;
-                                            } else {
-                                              GKernel.instance.compress = compressSettings.Both;
-                                            }
-                                          } else {
-                                            if (GKernel.instance.compress == compressSettings.Both) {
-                                              GKernel.instance.compress = compressSettings.NaturalOnly;
-                                            } else {
-                                              GKernel.instance.compress = compressSettings.noCompress;
-                                            }
-                                          }
-                                        }),
-                                        content: const Text('智能有损压缩'),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Row(
-                                        children: [
-                                          const Text('最大允许高度'),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: TextBox(
-                                              placeholder: '255',
-                                              controller: GKernel.instance.maH,
-                                              keyboardType: TextInputType.number,
-                                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                              maxLength: 4,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          child: RepaintBoundary(
-                            child: Button(
-                              child: const Text('更多配置：压缩高度'),
-                              onPressed: () {
-                                _optiFlyoutController.open = true;
-                              },
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Flyout(
-                          controller: _bridgeFlyoutController,
-                          contentWidth: 300,
-                          content: StatefulBuilder(
-                            builder: (context, setState) {
-                              return FlyoutContent(
-                                child: InfoLabel(
-                                  label: '搭桥',
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                                    children: [
-                                      Checkbox(
-                                        checked: GKernel.instance.bridge == glassBridgeSettings.withBridge,
-                                        onChanged: (value) => setState(() {
-                                          if (value == true) {
-                                            GKernel.instance.bridge = glassBridgeSettings.withBridge;
-                                          } else {
-                                            GKernel.instance.bridge = glassBridgeSettings.noBridge;
-                                          }
-                                        }),
-                                        content: const Text('允许搭桥'),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Row(
-                                        children: [
-                                          const Text('搭桥间隔'),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: TextBox(
-                                              placeholder: '4',
-                                              controller: GKernel.instance.bI,
-                                              keyboardType: TextInputType.number,
-                                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                              maxLength: 4,
-                                            ),
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          child: RepaintBoundary(
-                            child: Button(
-                              child: const Text('更多配置：搭桥'),
-                              onPressed: () {
-                                _bridgeFlyoutController.open = true;
-                              },
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Flyout(
-                          controller: _otherFlyoutController,
-                          contentWidth: 300,
-                          content: StatefulBuilder(
-                            builder: (context, setState) {
-                              return FlyoutContent(
-                                child: InfoLabel(
-                                  label: '其他选项',
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                                    children: [
-                                      Checkbox(
-                                        checked: GKernel.instance.fireProof,
-                                        onChanged: (value) => setState(() => GKernel.instance.fireProof = value!),
-                                        content: const Text('防火'),
-                                      ),
-                                      Checkbox(
-                                        checked: GKernel.instance.endermanProof,
-                                        onChanged: (value) => setState(() => GKernel.instance.endermanProof = value!),
-                                        content: const Text('防末影人'),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          child: RepaintBoundary(
-                            child: Button(
-                              child: const Text('更多配置：其他选项'),
-                              onPressed: () {
-                                _otherFlyoutController.open = true;
-                              },
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '配置将对每一张图片分别生效',
-                          style: typography.bodyLarge,
-                        ),
-                      ],
-                    ),
-                  ),
+              Card(
+                child: TextBox(
+                  header: '导出文件',
+                  placeholder: '\${PICTURE_PARENT_PATH}/\${PICTURE_BASENAME}',
+                  controller: GKernel.instance.multiExportFile,
+                  readOnly: true,
                 ),
-                flex: 2,
               ),
-              const SizedBox(width: 10),
+              const SizedBox(height: 10),
               Expanded(
-                child: RepaintBoundary(
-                  child: Column(
-                    children: [
-                      Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: RepaintBoundary(
                         child: Card(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Text('最后一步，将立体地图画导出为投影文件，这很方便生存实装，是不是？', style: typography.body),
-                              const SizedBox(height: 5),
-                              Text('左侧的三个栏是投影文件的一些属性，空着不填也完全没问题。', style: typography.body),
-                              const SizedBox(height: 5),
-                              Text('如果您启用了“允许压缩高度”，SlopeCraft会在构建三维结构时尝试依据地图绘制的规律压缩立体地图画的高度，这可以有效避免超过限高（但未必能成功）。', style: typography.body),
-                              const SizedBox(height: 5),
-                              Text('下面的两个栏显示了立体地图画的信息，以供参考。', style: typography.body),
+                              TextBox(
+                                header: '投影作者',
+                                placeholder: 'SlopeCraft',
+                                controller: GKernel.instance.liteAuthor,
+                                readOnly: GKernel.instance.building,
+                              ),
+                              const SizedBox(height: 8),
+                              TextBox(
+                                header: '投影区域名称',
+                                placeholder: 'Pixel Paint by SlopeCraft',
+                                controller: GKernel.instance.liteRegionName,
+                                readOnly: GKernel.instance.building,
+                              ),
+                              const SizedBox(height: 8),
+                              const Divider(),
+                              const SizedBox(height: 8),
+                              Flyout(
+                                controller: _optiFlyoutController,
+                                contentWidth: 300,
+                                content: StatefulBuilder(
+                                  builder: (context, setState) {
+                                    return FlyoutContent(
+                                      child: InfoLabel(
+                                        label: '压缩高度',
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                                          children: [
+                                            Checkbox(
+                                              checked: GKernel.instance.compress == compressSettings.Both ||
+                                                  GKernel.instance.compress == compressSettings.NaturalOnly,
+                                              onChanged: GKernel.instance.building
+                                                  ? null
+                                                  : (value) => setState(() {
+                                                        if (value == true) {
+                                                          if (GKernel.instance.compress == compressSettings.noCompress) {
+                                                            GKernel.instance.compress = compressSettings.NaturalOnly;
+                                                          } else {
+                                                            GKernel.instance.compress = compressSettings.Both;
+                                                          }
+                                                        } else {
+                                                          if (GKernel.instance.compress == compressSettings.Both) {
+                                                            GKernel.instance.compress = compressSettings.ForcedOnly;
+                                                          } else {
+                                                            GKernel.instance.compress = compressSettings.noCompress;
+                                                          }
+                                                        }
+                                                      }),
+                                              content: const Text('无损压缩'),
+                                            ),
+                                            Checkbox(
+                                              checked: GKernel.instance.compress == compressSettings.Both ||
+                                                  GKernel.instance.compress == compressSettings.ForcedOnly,
+                                              onChanged: GKernel.instance.building
+                                                  ? null
+                                                  : (value) => setState(() {
+                                                        if (value == true) {
+                                                          if (GKernel.instance.compress == compressSettings.noCompress) {
+                                                            GKernel.instance.compress = compressSettings.ForcedOnly;
+                                                          } else {
+                                                            GKernel.instance.compress = compressSettings.Both;
+                                                          }
+                                                        } else {
+                                                          if (GKernel.instance.compress == compressSettings.Both) {
+                                                            GKernel.instance.compress = compressSettings.NaturalOnly;
+                                                          } else {
+                                                            GKernel.instance.compress = compressSettings.noCompress;
+                                                          }
+                                                        }
+                                                      }),
+                                              content: const Text('智能有损压缩'),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Row(
+                                              children: [
+                                                const Text('最大允许高度'),
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: TextBox(
+                                                    placeholder: '255',
+                                                    controller: GKernel.instance.maH,
+                                                    keyboardType: TextInputType.number,
+                                                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                                    maxLength: 4,
+                                                    readOnly: GKernel.instance.building,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                child: RepaintBoundary(
+                                  child: Button(
+                                    child: const Text('更多配置：压缩高度'),
+                                    onPressed: () {
+                                      _optiFlyoutController.open = true;
+                                    },
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Flyout(
+                                controller: _bridgeFlyoutController,
+                                contentWidth: 300,
+                                content: StatefulBuilder(
+                                  builder: (context, setState) {
+                                    return FlyoutContent(
+                                      child: InfoLabel(
+                                        label: '搭桥',
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                                          children: [
+                                            Checkbox(
+                                              checked: GKernel.instance.bridge == glassBridgeSettings.withBridge,
+                                              onChanged: GKernel.instance.building
+                                                  ? null
+                                                  : (value) => setState(() {
+                                                        if (value == true) {
+                                                          GKernel.instance.bridge = glassBridgeSettings.withBridge;
+                                                        } else {
+                                                          GKernel.instance.bridge = glassBridgeSettings.noBridge;
+                                                        }
+                                                      }),
+                                              content: const Text('允许搭桥'),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Row(
+                                              children: [
+                                                const Text('搭桥间隔'),
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: TextBox(
+                                                    placeholder: '4',
+                                                    controller: GKernel.instance.bI,
+                                                    keyboardType: TextInputType.number,
+                                                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                                    maxLength: 4,
+                                                    readOnly: GKernel.instance.building,
+                                                  ),
+                                                ),
+                                              ],
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                child: RepaintBoundary(
+                                  child: Button(
+                                    child: const Text('更多配置：搭桥'),
+                                    onPressed: () {
+                                      _bridgeFlyoutController.open = true;
+                                    },
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Flyout(
+                                controller: _otherFlyoutController,
+                                contentWidth: 300,
+                                content: StatefulBuilder(
+                                  builder: (context, setState) {
+                                    return FlyoutContent(
+                                      child: InfoLabel(
+                                        label: '其他选项',
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                                          children: [
+                                            Checkbox(
+                                              checked: GKernel.instance.fireProof,
+                                              onChanged: GKernel.instance.building ? null : (value) => setState(() => GKernel.instance.fireProof = value!),
+                                              content: const Text('防火'),
+                                            ),
+                                            Checkbox(
+                                              checked: GKernel.instance.endermanProof,
+                                              onChanged: GKernel.instance.building ? null : (value) => setState(() => GKernel.instance.endermanProof = value!),
+                                              content: const Text('防末影人'),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                child: RepaintBoundary(
+                                  child: Button(
+                                    child: const Text('更多配置：其他选项'),
+                                    onPressed: () {
+                                      _otherFlyoutController.open = true;
+                                    },
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      Card(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Text(
-                                '投影尺寸：${GKernel.instance.scl.SCL_queryStep() >= step.builded ? 'X(${GKernel.instance.dx})/Y(${GKernel.instance.dy})/Z(${GKernel.instance.dz})方块' : ''} ',
-                                style: typography.bodyLarge),
-                            const SizedBox(height: 5),
-                            Text('方块总数：${GKernel.instance.scl.SCL_queryStep() >= step.builded ? GKernel.instance.scl.SCL_getBlockCounts() : ''}',
-                                style: typography.bodyLarge),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Card(
+                      flex: 2,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: RepaintBoundary(
                         child: Column(
                           children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: RepaintBoundary(
-                                    child: Button(
-                                      child: const Text('构建三维结构'),
-                                      onPressed: () {
-                                        if (GKernel.instance.bI.text.isEmpty) {
-                                          GKernel.instance.bI.text = '4';
-                                        }
-                                        if (GKernel.instance.maH.text.isEmpty) {
-                                          GKernel.instance.maH.text = '255';
-                                        }
-                                        if (int.parse(GKernel.instance.maH.text) < 14) {
-                                          GKernel.instance.maH.text = '14';
-                                        }
-                                        if (GKernel.instance.liteAuthor.text.isEmpty) {
-                                          GKernel.instance.liteAuthor.text = 'SlopeCraft';
-                                        }
-                                        if (GKernel.instance.liteName.text.isEmpty) {
-                                          GKernel.instance.liteName.text = 'Pixel Paint by SlopeCraft';
-                                        }
-                                        if (GKernel.instance.liteRegionName.text.isEmpty) {
-                                          GKernel.instance.liteRegionName.text = 'Pixel Paint by SlopeCraft';
-                                        }
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) {
-                                            return ContentDialog(
-                                              constraints: const BoxConstraints(
-                                                maxHeight: 150,
-                                                maxWidth: 400,
-                                              ),
-                                              title: const Text('构建'),
-                                              content: Center(
-                                                child: FutureBuilder<void>(
-                                                  future: compute(
-                                                      build3D,
-                                                      BuildArgs(
-                                                          compress: GKernel.instance.compress,
-                                                          maH: int.parse(GKernel.instance.maH.text),
-                                                          bridge: GKernel.instance.bridge,
-                                                          bI: int.parse(GKernel.instance.bI.text),
-                                                          fireProof: GKernel.instance.fireProof,
-                                                          endermanProof: GKernel.instance.endermanProof)),
-                                                  builder: (BuildContext context, AsyncSnapshot snapshot) {
-                                                    if (snapshot.connectionState == ConnectionState.done) {
-                                                      if (snapshot.hasError) {
-                                                        return Column(
-                                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                                          children: [
-                                                            Text(
-                                                              '构建失败： ${snapshot.error}',
-                                                              style: typography.bodyLarge,
-                                                            ),
-                                                            const SizedBox(height: 10),
-                                                            Row(
-                                                              children: [
-                                                                const Expanded(child: Text('')),
-                                                                SizedBox(
-                                                                  width: 150,
-                                                                  child: FilledButton(
-                                                                    child: const Text('确定'),
-                                                                    onPressed: () {
-                                                                      Navigator.pop(context);
-                                                                    },
-                                                                  ),
-                                                                )
-                                                              ],
-                                                            )
-                                                          ],
-                                                        );
-                                                      } else {
-                                                        return Column(
-                                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                                          children: [
-                                                            Text(
-                                                              '构建${snapshot.data ? '成功' : '失败：未知'}',
-                                                              style: typography.bodyLarge,
-                                                            ),
-                                                            const SizedBox(height: 10),
-                                                            Row(
-                                                              children: [
-                                                                const Expanded(child: Text('')),
-                                                                SizedBox(
-                                                                  width: 150,
-                                                                  child: FilledButton(
-                                                                    child: const Text('确定'),
-                                                                    onPressed: () {
-                                                                      Navigator.pop(context);
-                                                                      if (snapshot.data) {
-                                                                        Pointer<Int32> x, y, z;
-                                                                        x = ffi.malloc.call(1);
-                                                                        y = ffi.malloc.call(1);
-                                                                        z = ffi.malloc.call(1);
-                                                                        GKernel.instance.scl.SCL_get3DSize(x, y, z);
-                                                                        GKernel.instance.dx = x.value;
-                                                                        GKernel.instance.dy = y.value;
-                                                                        GKernel.instance.dz = z.value;
-                                                                        ffi.malloc.free(x);
-                                                                        ffi.malloc.free(y);
-                                                                        ffi.malloc.free(z);
-                                                                      }
-                                                                      GKernel.instance.getConvertedImage();
-                                                                      GKernel.instance.getBlockCounts();
-                                                                      setState(() {});
-                                                                    },
-                                                                  ),
-                                                                )
-                                                              ],
-                                                            )
-                                                          ],
-                                                        );
-                                                      }
-                                                    } else {
-                                                      return Row(
-                                                        children: const [
-                                                          ProgressRing(),
-                                                          SizedBox(width: 10),
-                                                          Text('正在构建三维模型'),
-                                                        ],
-                                                      );
-                                                    }
-                                                  },
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        );
-                                      },
-                                    ),
-                                  ),
+                            Expanded(
+                              child: Card(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    Text('最后一步，将立体地图画导出为投影文件，这很方便生存实装，是不是？', style: typography.body),
+                                    const SizedBox(height: 5),
+                                    Text('左侧的三个栏是投影文件的一些属性，空着不填也完全没问题。', style: typography.body),
+                                    const SizedBox(height: 5),
+                                    Text('如果您启用了“允许压缩高度”，SlopeCraft会在构建三维结构时尝试依据地图绘制的规律压缩立体地图画的高度，这可以有效避免超过限高（但未必能成功）。', style: typography.body),
+                                    const SizedBox(height: 5),
+                                    Text('下面的两个栏显示了立体地图画的信息，以供参考。', style: typography.body),
+                                  ],
                                 ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: RepaintBoundary(
-                                    child: Button(
-                                        child: const Text('地图画预览'),
-                                        onPressed: GKernel.instance.scl.SCL_queryStep() >= step.builded && GKernel.instance.convertedImage != null
-                                            ? () {
-                                                showDialog(
-                                                  context: context,
-                                                  builder: (context) {
-                                                    return StatefulBuilder(
-                                                      builder: (context, setState) {
-                                                        return ContentDialog(
-                                                          title: const Text('地图画预览'),
-                                                          content: AspectRatio(
-                                                            aspectRatio: 1,
-                                                            child: GKernel.instance.convertedImage!,
-                                                          ),
-                                                          actions: [
-                                                            SizedBox(
-                                                              width: 150,
-                                                              child: Button(
-                                                                child: const Text('确定'),
-                                                                onPressed: () {
-                                                                  Navigator.pop(context);
-                                                                },
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        );
-                                                      },
-                                                    );
-                                                  },
-                                                );
-                                              }
-                                            : null),
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: RepaintBoundary(
-                                    child: Button(
-                                      child: const Text('材料列表'),
-                                      onPressed: GKernel.instance.scl.SCL_queryStep() >= step.builded
-                                          ? () {
-                                              showDialog(
-                                                context: context,
-                                                builder: (context) {
-                                                  return StatefulBuilder(
-                                                    builder: (context, setState) {
-                                                      return ContentDialog(
-                                                        constraints: const BoxConstraints(maxWidth: 700, maxHeight: 600),
-                                                        title: Row(
-                                                          children: [
-                                                            const Text('材料列表'),
-                                                            const Expanded(child: Text('')),
-                                                            Checkbox(
-                                                              checked: GKernel.instance.showString,
-                                                              onChanged: (val) {
-                                                                if (val != null) {
-                                                                  GKernel.instance.showString = val;
-                                                                }
-                                                                setState(() {});
-                                                              },
-                                                              content: const Text(
-                                                                '转换单位',
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        content: Column(
-                                                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                                                          children: [
-                                                            Text(
-                                                              '投影尺寸：${GKernel.instance.dx} X ${GKernel.instance.dy} X ${GKernel.instance.dz}方块',
-                                                              style: typography.bodyLarge,
-                                                            ),
-                                                            Text(
-                                                              '总方块数：${GKernel.instance.scl.SCL_getBlockCounts()}方块',
-                                                              style: typography.bodyLarge,
-                                                            ),
-                                                            Text(
-                                                              '总体积：${GKernel.instance.dx * GKernel.instance.dy * GKernel.instance.dz}方块',
-                                                              style: typography.bodyLarge,
-                                                            ),
-                                                            const SizedBox(height: 10),
-                                                            Container(
-                                                              constraints: const BoxConstraints(maxHeight: 290),
-                                                              child: Row(
-                                                                children: [
-                                                                  Expanded(
-                                                                    child: ListView.builder(
-                                                                      controller: _controllerl,
-                                                                      itemCount: GKernel.instance.blocksLeft.length,
-                                                                      itemBuilder: (context, index) {
-                                                                        Item item = GKernel.instance.blocksLeft[index];
-                                                                        return ListTile(
-                                                                          title: Row(
-                                                                            children: [
-                                                                              SizedBox(
-                                                                                height: 16,
-                                                                                width: 16,
-                                                                                child: item.image,
-                                                                              ),
-                                                                              const SizedBox(width: 10),
-                                                                              Text('${item.name}：'),
-                                                                              const Expanded(child: Text('')),
-                                                                              Text('${GKernel.instance.showString ? item.countb : item.count}'),
-                                                                            ],
-                                                                          ),
-                                                                        );
-                                                                      },
-                                                                    ),
-                                                                  ),
-                                                                  Expanded(
-                                                                    child: ListView.builder(
-                                                                      controller: _controllerr,
-                                                                      itemCount: GKernel.instance.blocksRight.length,
-                                                                      itemBuilder: (context, index) {
-                                                                        Item item = GKernel.instance.blocksRight[index];
-                                                                        return ListTile(
-                                                                          title: Row(
-                                                                            children: [
-                                                                              SizedBox(
-                                                                                height: 16,
-                                                                                width: 16,
-                                                                                child: item.image,
-                                                                              ),
-                                                                              const SizedBox(width: 10),
-                                                                              Text('${item.name}：'),
-                                                                              const Expanded(child: Text('')),
-                                                                              Text('${GKernel.instance.showString ? item.countb : item.count}'),
-                                                                            ],
-                                                                          ),
-                                                                        );
-                                                                      },
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        actions: [
-                                                          Button(
-                                                            child: const Text('导出到Excel'),
-                                                            onPressed: () async {
-                                                              String? outputFile = await file_picker.FilePicker.platform.saveFile(
-                                                                dialogTitle: '导出',
-                                                                fileName: '材料列表.xlsx',
-                                                              );
-
-                                                              if (outputFile == null) {
-                                                                return;
-                                                              }
-
-                                                              var excel = Excel.createExcel();
-                                                              Sheet sheetObject = excel['Sheet1'];
-                                                              sheetObject.merge(CellIndex.indexByString("A1"), CellIndex.indexByString("C1"),
-                                                                  customValue: "Generated By SlopeCraft");
-                                                              sheetObject.insertRowIterables(['方块种类', '个数', '换算'], 1);
-                                                              for (int i = 0; i < GKernel.instance.blocks.length; i++) {
-                                                                sheetObject.insertRowIterables([
-                                                                  GKernel.instance.blocks[i].name,
-                                                                  '${GKernel.instance.blocks[i].count}个',
-                                                                  GKernel.instance.blocks[i].countb
-                                                                ], i + 2);
-                                                              }
-
-                                                              var fileBytes = excel.save();
-
-                                                              File(outputFile)
-                                                                ..createSync(recursive: true)
-                                                                ..writeAsBytes(fileBytes!);
-                                                            },
-                                                          ),
-                                                          Button(
-                                                            child: const Text('确定'),
-                                                            onPressed: () {
-                                                              Navigator.pop(context);
-                                                            },
-                                                          ),
-                                                        ],
-                                                      );
-                                                    },
-                                                  );
-                                                },
-                                              );
-                                            }
-                                          : null,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: RepaintBoundary(
+                            const SizedBox(height: 10),
+                            Card(
+                              child: Row(
+                                children: [
+                                  Expanded(
                                     child: FilledButton(
-                                      child: const Text('导出！'),
-                                      onPressed: () async {
-                                        if (GKernel.instance.scl.SCL_queryStep() < step.builded) {
-                                          showDialog(
-                                            builder: (context) {
-                                              return ContentDialog(
-                                                title: const Text('无法跳步操作'),
-                                                content: const Text('未构建三维结构'),
-                                                actions: [
-                                                  SizedBox(
-                                                    width: 150,
-                                                    child: Button(
-                                                        child: const Text('确定'),
-                                                        onPressed: () {
-                                                          Navigator.pop(context);
-                                                        }),
-                                                  ),
-                                                ],
-                                              );
+                                      child: const Text('导出'),
+                                      onPressed: GKernel.instance.building
+                                          ? null
+                                          : () async {
+                                              GKernel.instance.building = true;
+                                              setState(() {});
+                                              if (GKernel.instance.bI.text.isEmpty) {
+                                                GKernel.instance.bI.text = '4';
+                                              }
+                                              if (GKernel.instance.maH.text.isEmpty) {
+                                                GKernel.instance.maH.text = '255';
+                                              }
+                                              if (int.parse(GKernel.instance.maH.text) < 14) {
+                                                GKernel.instance.maH.text = '14';
+                                              }
+                                              if (GKernel.instance.liteAuthor.text.isEmpty) {
+                                                GKernel.instance.liteAuthor.text = 'SlopeCraft';
+                                              }
+                                              if (GKernel.instance.liteName.text.isEmpty) {
+                                                GKernel.instance.liteName.text = 'Pixel Paint by SlopeCraft';
+                                              }
+                                              if (GKernel.instance.liteRegionName.text.isEmpty) {
+                                                GKernel.instance.liteRegionName.text = 'Pixel Paint by SlopeCraft';
+                                              }
+                                              for (int i = 0; i < GKernel.instance.multiRaw.length; i++) {
+                                                // bool value = await
+                                                compute(
+                                                    exportMulti,
+                                                    ExportMultiArgs(
+                                                        convertMethod: GKernel.instance.convertMethod,
+                                                        p: GKernel.instance.multiRaw[i],
+                                                        scl_halfTpPixelSt: GKernel.instance.scl_halfTpPixelSt,
+                                                        scl_pureTpPixelSt: GKernel.instance.scl_pureTpPixelSt,
+                                                        dithering: GKernel.instance.dithering,
+                                                        liteName: GKernel.instance.liteName.text,
+                                                        liteAuthor: GKernel.instance.liteAuthor.text,
+                                                        liteRegionName: GKernel.instance.liteRegionName.text,
+                                                        bI: int.parse(GKernel.instance.maH.text),
+                                                        bridge: GKernel.instance.bridge,
+                                                        compress: GKernel.instance.compress,
+                                                        endermanProof: GKernel.instance.endermanProof,
+                                                        exportType: GKernel.instance.exportType,
+                                                        fireProof: GKernel.instance.fireProof,
+                                                        maH: int.parse(GKernel.instance.maH.text),
+                                                        backgroundColor: GKernel.instance.backgroundColor));
+                                                // if (!value) {
+                                                //   GKernel.instance.multiFail.add(GKernel.instance.multiRaw[i]);
+                                                // }
+                                                // GKernel.instance.multiProgress = i / GKernel.instance.multiRaw.length * 100;
+                                                // if (1 % 10 == 0) {
+                                                //   setState(() {});
+                                                // }
+                                              }
+                                              for (int i = 0; i < GKernel.instance.multiDir.length; i++) {
+                                                Directory dir = Directory(GKernel.instance.multiDir[i]);
+                                                Stream<FileSystemEntity> entityList = dir.list(recursive: false, followLinks: false);
+                                                await for (FileSystemEntity entity in entityList) {
+                                                  if (entity.statSync().type == FileSystemEntityType.file &&
+                                                      ['.png', '.bmp', '.jpeg', '.jpg', '.tga', '.webp', '.tiff'].contains(path.extension(entity.path))) {
+                                                    if (!exportMulti(ExportMultiArgs(
+                                                        convertMethod: GKernel.instance.convertMethod,
+                                                        p: entity.path,
+                                                        scl_halfTpPixelSt: GKernel.instance.scl_halfTpPixelSt,
+                                                        scl_pureTpPixelSt: GKernel.instance.scl_pureTpPixelSt,
+                                                        dithering: GKernel.instance.dithering,
+                                                        liteName: GKernel.instance.liteName.text,
+                                                        liteAuthor: GKernel.instance.liteAuthor.text,
+                                                        liteRegionName: GKernel.instance.liteRegionName.text,
+                                                        bI: int.parse(GKernel.instance.maH.text),
+                                                        bridge: GKernel.instance.bridge,
+                                                        compress: GKernel.instance.compress,
+                                                        endermanProof: GKernel.instance.endermanProof,
+                                                        exportType: GKernel.instance.exportType,
+                                                        fireProof: GKernel.instance.fireProof,
+                                                        maH: int.parse(GKernel.instance.maH.text),
+                                                        backgroundColor: GKernel.instance.backgroundColor))) {
+                                                      GKernel.instance.multiFail.add(entity.path);
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                              GKernel.instance.setType(context, true);
+                                              GKernel.instance.building = false;
+                                              GKernel.instance.multiProgress = 100.0;
+                                              setState(() {});
                                             },
-                                            context: context,
-                                          );
-                                          return;
-                                        }
-
-                                        String? outputFile = await file_picker.FilePicker.platform.saveFile(
-                                          dialogTitle: '导出',
-                                          fileName: '${GKernel.instance.liteName.text}.litematic',
-                                        );
-
-                                        if (outputFile == null) {
-                                          return;
-                                        }
-                                        GKernel.instance.scl.SCL_exportAsLitematic(
-                                            path.basename(outputFile).toNativeUtf8().cast(),
-                                            GKernel.instance.liteName.text.toNativeUtf8().cast(),
-                                            GKernel.instance.liteAuthor.text.toNativeUtf8().cast(),
-                                            GKernel.instance.liteRegionName.text.toNativeUtf8().cast(),
-                                            nullptr);
-                                        showDialog(
-                                          builder: (context) {
-                                            return ContentDialog(
-                                              title: const Text('导出完成'),
-                                              content: const Text('已导出投影文件'),
-                                              actions: [
-                                                SizedBox(
-                                                  width: 150,
-                                                  child: FilledButton(
-                                                    child: const Text('确定'),
-                                                    onPressed: () {
-                                                      Navigator.pop(context);
-                                                    },
-                                                  ),
-                                                ),
-                                              ],
-                                            );
-                                          },
-                                          context: context,
-                                        );
-                                      },
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    ],
+                      flex: 3,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              Card(
+                child: RepaintBoundary(
+                  child: ProgressBar(
+                    value: GKernel.instance.multiProgress,
                   ),
                 ),
-                flex: 3,
               ),
             ],
           ),
@@ -735,658 +445,639 @@ class _ExportLitematicaState extends State<ExportLitematica> {
       ),
       content: Padding(
         padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: RepaintBoundary(
-                child: Card(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      TextBox(
-                        header: '投影名称',
-                        placeholder: 'Pixel Paint by SlopeCraft',
-                        controller: GKernel.instance.liteName,
-                      ),
-                      const SizedBox(height: 8),
-                      TextBox(
-                        header: '投影作者',
-                        placeholder: 'SlopeCraft',
-                        controller: GKernel.instance.liteAuthor,
-                      ),
-                      const SizedBox(height: 8),
-                      TextBox(
-                        header: '投影区域名称',
-                        placeholder: 'Pixel Paint by SlopeCraft',
-                        controller: GKernel.instance.liteRegionName,
-                      ),
-                      const SizedBox(height: 8),
-                      const Divider(),
-                      const SizedBox(height: 8),
-                      Flyout(
-                        controller: _optiFlyoutController,
-                        contentWidth: 300,
-                        content: StatefulBuilder(
-                          builder: (context, setState) {
-                            return FlyoutContent(
-                              child: InfoLabel(
-                                label: '压缩高度',
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: [
-                                    Checkbox(
-                                      checked: GKernel.instance.compress == compressSettings.Both || GKernel.instance.compress == compressSettings.NaturalOnly,
-                                      onChanged: (value) => setState(() {
-                                        if (value == true) {
-                                          if (GKernel.instance.compress == compressSettings.noCompress) {
-                                            GKernel.instance.compress = compressSettings.NaturalOnly;
-                                          } else {
-                                            GKernel.instance.compress = compressSettings.Both;
-                                          }
-                                        } else {
-                                          if (GKernel.instance.compress == compressSettings.Both) {
-                                            GKernel.instance.compress = compressSettings.ForcedOnly;
-                                          } else {
-                                            GKernel.instance.compress = compressSettings.noCompress;
-                                          }
-                                        }
-                                      }),
-                                      content: const Text('无损压缩'),
-                                    ),
-                                    Checkbox(
-                                      checked: GKernel.instance.compress == compressSettings.Both || GKernel.instance.compress == compressSettings.ForcedOnly,
-                                      onChanged: (value) => setState(() {
-                                        if (value == true) {
-                                          if (GKernel.instance.compress == compressSettings.noCompress) {
-                                            GKernel.instance.compress = compressSettings.ForcedOnly;
-                                          } else {
-                                            GKernel.instance.compress = compressSettings.Both;
-                                          }
-                                        } else {
-                                          if (GKernel.instance.compress == compressSettings.Both) {
-                                            GKernel.instance.compress = compressSettings.NaturalOnly;
-                                          } else {
-                                            GKernel.instance.compress = compressSettings.noCompress;
-                                          }
-                                        }
-                                      }),
-                                      content: const Text('智能有损压缩'),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        const Text('最大允许高度'),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: TextBox(
-                                            placeholder: '255',
-                                            controller: GKernel.instance.maH,
-                                            keyboardType: TextInputType.number,
-                                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                            maxLength: 4,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                        child: RepaintBoundary(
-                          child: Button(
-                            child: const Text('更多配置：压缩高度'),
-                            onPressed: () {
-                              _optiFlyoutController.open = true;
-                            },
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Flyout(
-                        controller: _bridgeFlyoutController,
-                        contentWidth: 300,
-                        content: StatefulBuilder(
-                          builder: (context, setState) {
-                            return FlyoutContent(
-                              child: InfoLabel(
-                                label: '搭桥',
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: [
-                                    Checkbox(
-                                      checked: GKernel.instance.bridge == glassBridgeSettings.withBridge,
-                                      onChanged: (value) => setState(() {
-                                        if (value == true) {
-                                          GKernel.instance.bridge = glassBridgeSettings.withBridge;
-                                        } else {
-                                          GKernel.instance.bridge = glassBridgeSettings.noBridge;
-                                        }
-                                      }),
-                                      content: const Text('允许搭桥'),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        const Text('搭桥间隔'),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: TextBox(
-                                            placeholder: '4',
-                                            controller: GKernel.instance.bI,
-                                            keyboardType: TextInputType.number,
-                                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                            maxLength: 4,
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                        child: RepaintBoundary(
-                          child: Button(
-                            child: const Text('更多配置：搭桥'),
-                            onPressed: () {
-                              _bridgeFlyoutController.open = true;
-                            },
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Flyout(
-                        controller: _otherFlyoutController,
-                        contentWidth: 300,
-                        content: StatefulBuilder(
-                          builder: (context, setState) {
-                            return FlyoutContent(
-                              child: InfoLabel(
-                                label: '其他选项',
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: [
-                                    Checkbox(
-                                      checked: GKernel.instance.fireProof,
-                                      onChanged: (value) => setState(() => GKernel.instance.fireProof = value!),
-                                      content: const Text('防火'),
-                                    ),
-                                    Checkbox(
-                                      checked: GKernel.instance.endermanProof,
-                                      onChanged: (value) => setState(() => GKernel.instance.endermanProof = value!),
-                                      content: const Text('防末影人'),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                        child: RepaintBoundary(
-                          child: Button(
-                            child: const Text('更多配置：其他选项'),
-                            onPressed: () {
-                              _otherFlyoutController.open = true;
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              flex: 2,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: RepaintBoundary(
-                child: Column(
-                  children: [
-                    Expanded(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: RepaintBoundary(
                       child: Card(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Text('最后一步，将立体地图画导出为投影文件，这很方便生存实装，是不是？', style: typography.body),
-                            const SizedBox(height: 5),
-                            Text('左侧的三个栏是投影文件的一些属性，空着不填也完全没问题。', style: typography.body),
-                            const SizedBox(height: 5),
-                            Text('如果您启用了“允许压缩高度”，SlopeCraft会在构建三维结构时尝试依据地图绘制的规律压缩立体地图画的高度，这可以有效避免超过限高（但未必能成功）。', style: typography.body),
-                            const SizedBox(height: 5),
-                            Text('下面的两个栏显示了立体地图画的信息，以供参考。', style: typography.body),
-                            const SizedBox(height: 5),
-                            Text('这个过程可能会很慢', style: typography.bodyLarge),
+                            TextBox(
+                              header: '投影名称',
+                              placeholder: 'Pixel Paint by SlopeCraft',
+                              controller: GKernel.instance.liteName,
+                            ),
+                            const SizedBox(height: 8),
+                            TextBox(
+                              header: '投影作者',
+                              placeholder: 'SlopeCraft',
+                              controller: GKernel.instance.liteAuthor,
+                            ),
+                            const SizedBox(height: 8),
+                            TextBox(
+                              header: '投影区域名称',
+                              placeholder: 'Pixel Paint by SlopeCraft',
+                              controller: GKernel.instance.liteRegionName,
+                            ),
+                            const SizedBox(height: 8),
+                            const Divider(),
+                            const SizedBox(height: 8),
+                            Flyout(
+                              controller: _optiFlyoutController,
+                              contentWidth: 300,
+                              content: StatefulBuilder(
+                                builder: (context, setState) {
+                                  return FlyoutContent(
+                                    child: InfoLabel(
+                                      label: '压缩高度',
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        children: [
+                                          Checkbox(
+                                            checked:
+                                                GKernel.instance.compress == compressSettings.Both || GKernel.instance.compress == compressSettings.NaturalOnly,
+                                            onChanged: (value) => setState(() {
+                                              if (value == true) {
+                                                if (GKernel.instance.compress == compressSettings.noCompress) {
+                                                  GKernel.instance.compress = compressSettings.NaturalOnly;
+                                                } else {
+                                                  GKernel.instance.compress = compressSettings.Both;
+                                                }
+                                              } else {
+                                                if (GKernel.instance.compress == compressSettings.Both) {
+                                                  GKernel.instance.compress = compressSettings.ForcedOnly;
+                                                } else {
+                                                  GKernel.instance.compress = compressSettings.noCompress;
+                                                }
+                                              }
+                                            }),
+                                            content: const Text('无损压缩'),
+                                          ),
+                                          Checkbox(
+                                            checked:
+                                                GKernel.instance.compress == compressSettings.Both || GKernel.instance.compress == compressSettings.ForcedOnly,
+                                            onChanged: (value) => setState(() {
+                                              if (value == true) {
+                                                if (GKernel.instance.compress == compressSettings.noCompress) {
+                                                  GKernel.instance.compress = compressSettings.ForcedOnly;
+                                                } else {
+                                                  GKernel.instance.compress = compressSettings.Both;
+                                                }
+                                              } else {
+                                                if (GKernel.instance.compress == compressSettings.Both) {
+                                                  GKernel.instance.compress = compressSettings.NaturalOnly;
+                                                } else {
+                                                  GKernel.instance.compress = compressSettings.noCompress;
+                                                }
+                                              }
+                                            }),
+                                            content: const Text('智能有损压缩'),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Row(
+                                            children: [
+                                              const Text('最大允许高度'),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: TextBox(
+                                                  placeholder: '255',
+                                                  controller: GKernel.instance.maH,
+                                                  keyboardType: TextInputType.number,
+                                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                                  maxLength: 4,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              child: RepaintBoundary(
+                                child: Button(
+                                  child: const Text('更多配置：压缩高度'),
+                                  onPressed: () {
+                                    _optiFlyoutController.open = true;
+                                  },
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Flyout(
+                              controller: _bridgeFlyoutController,
+                              contentWidth: 300,
+                              content: StatefulBuilder(
+                                builder: (context, setState) {
+                                  return FlyoutContent(
+                                    child: InfoLabel(
+                                      label: '搭桥',
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        children: [
+                                          Checkbox(
+                                            checked: GKernel.instance.bridge == glassBridgeSettings.withBridge,
+                                            onChanged: (value) => setState(() {
+                                              if (value == true) {
+                                                GKernel.instance.bridge = glassBridgeSettings.withBridge;
+                                              } else {
+                                                GKernel.instance.bridge = glassBridgeSettings.noBridge;
+                                              }
+                                            }),
+                                            content: const Text('允许搭桥'),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Row(
+                                            children: [
+                                              const Text('搭桥间隔'),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: TextBox(
+                                                  placeholder: '4',
+                                                  controller: GKernel.instance.bI,
+                                                  keyboardType: TextInputType.number,
+                                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                                  maxLength: 4,
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              child: RepaintBoundary(
+                                child: Button(
+                                  child: const Text('更多配置：搭桥'),
+                                  onPressed: () {
+                                    _bridgeFlyoutController.open = true;
+                                  },
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Flyout(
+                              controller: _otherFlyoutController,
+                              contentWidth: 300,
+                              content: StatefulBuilder(
+                                builder: (context, setState) {
+                                  return FlyoutContent(
+                                    child: InfoLabel(
+                                      label: '其他选项',
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        children: [
+                                          Checkbox(
+                                            checked: GKernel.instance.fireProof,
+                                            onChanged: (value) => setState(() => GKernel.instance.fireProof = value!),
+                                            content: const Text('防火'),
+                                          ),
+                                          Checkbox(
+                                            checked: GKernel.instance.endermanProof,
+                                            onChanged: (value) => setState(() => GKernel.instance.endermanProof = value!),
+                                            content: const Text('防末影人'),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              child: RepaintBoundary(
+                                child: Button(
+                                  child: const Text('更多配置：其他选项'),
+                                  onPressed: () {
+                                    _otherFlyoutController.open = true;
+                                  },
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Card(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                              '投影尺寸：${GKernel.instance.scl.SCL_queryStep() >= step.builded ? 'X(${GKernel.instance.dx})/Y(${GKernel.instance.dy})/Z(${GKernel.instance.dz})方块' : ''} ',
-                              style: typography.bodyLarge),
-                          const SizedBox(height: 5),
-                          Text('方块总数：${GKernel.instance.scl.SCL_queryStep() >= step.builded ? GKernel.instance.scl.SCL_getBlockCounts() : ''}',
-                              style: typography.bodyLarge),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Card(
+                    flex: 2,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: RepaintBoundary(
                       child: Column(
                         children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: RepaintBoundary(
-                                  child: Button(
-                                    child: const Text('构建三维结构'),
-                                    onPressed: () {
-                                      if (GKernel.instance.bI.text.isEmpty) {
-                                        GKernel.instance.bI.text = '4';
-                                      }
-                                      if (GKernel.instance.maH.text.isEmpty) {
-                                        GKernel.instance.maH.text = '255';
-                                      }
-                                      if (int.parse(GKernel.instance.maH.text) < 14) {
-                                        GKernel.instance.maH.text = '14';
-                                      }
-                                      if (GKernel.instance.liteAuthor.text.isEmpty) {
-                                        GKernel.instance.liteAuthor.text = 'SlopeCraft';
-                                      }
-                                      if (GKernel.instance.liteName.text.isEmpty) {
-                                        GKernel.instance.liteName.text = 'Pixel Paint by SlopeCraft';
-                                      }
-                                      if (GKernel.instance.liteRegionName.text.isEmpty) {
-                                        GKernel.instance.liteRegionName.text = 'Pixel Paint by SlopeCraft';
-                                      }
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) {
-                                          return ContentDialog(
-                                            constraints: const BoxConstraints(
-                                              maxHeight: 150,
-                                              maxWidth: 400,
-                                            ),
-                                            title: const Text('构建'),
-                                            content: Center(
-                                              child: FutureBuilder<void>(
-                                                future: compute(
-                                                    build3D,
-                                                    BuildArgs(
-                                                        compress: GKernel.instance.compress,
-                                                        maH: int.parse(GKernel.instance.maH.text),
-                                                        bridge: GKernel.instance.bridge,
-                                                        bI: int.parse(GKernel.instance.bI.text),
-                                                        fireProof: GKernel.instance.fireProof,
-                                                        endermanProof: GKernel.instance.endermanProof)),
-                                                builder: (BuildContext context, AsyncSnapshot snapshot) {
-                                                  if (snapshot.connectionState == ConnectionState.done) {
-                                                    if (snapshot.hasError) {
-                                                      return Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: [
-                                                          Text(
-                                                            '构建失败： ${snapshot.error}',
-                                                            style: typography.bodyLarge,
-                                                          ),
-                                                          const SizedBox(height: 10),
-                                                          Row(
-                                                            children: [
-                                                              const Expanded(child: Text('')),
-                                                              SizedBox(
-                                                                width: 150,
-                                                                child: FilledButton(
-                                                                  child: const Text('确定'),
-                                                                  onPressed: () {
-                                                                    Navigator.pop(context);
-                                                                  },
-                                                                ),
-                                                              )
-                                                            ],
-                                                          )
-                                                        ],
-                                                      );
-                                                    } else {
-                                                      return Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: [
-                                                          Text(
-                                                            '构建${snapshot.data ? '成功' : '失败：未知'}',
-                                                            style: typography.bodyLarge,
-                                                          ),
-                                                          const SizedBox(height: 10),
-                                                          Row(
-                                                            children: [
-                                                              const Expanded(child: Text('')),
-                                                              SizedBox(
-                                                                width: 150,
-                                                                child: FilledButton(
-                                                                  child: const Text('确定'),
-                                                                  onPressed: () {
-                                                                    Navigator.pop(context);
-                                                                    if (snapshot.data) {
-                                                                      Pointer<Int32> x, y, z;
-                                                                      x = ffi.malloc.call(1);
-                                                                      y = ffi.malloc.call(1);
-                                                                      z = ffi.malloc.call(1);
-                                                                      GKernel.instance.scl.SCL_get3DSize(x, y, z);
-                                                                      GKernel.instance.dx = x.value;
-                                                                      GKernel.instance.dy = y.value;
-                                                                      GKernel.instance.dz = z.value;
-                                                                      ffi.malloc.free(x);
-                                                                      ffi.malloc.free(y);
-                                                                      ffi.malloc.free(z);
-                                                                    }
-                                                                    GKernel.instance.getConvertedImage();
-                                                                    GKernel.instance.getBlockCounts();
-                                                                    setState(() {});
-                                                                  },
-                                                                ),
-                                                              )
-                                                            ],
-                                                          )
-                                                        ],
-                                                      );
-                                                    }
-                                                  } else {
-                                                    return Row(
-                                                      children: const [
-                                                        ProgressRing(),
-                                                        SizedBox(width: 10),
-                                                        Text('正在构建三维模型'),
-                                                      ],
-                                                    );
-                                                  }
-                                                },
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ),
+                          Expanded(
+                            child: Card(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Text('最后一步，将立体地图画导出为投影文件，这很方便生存实装，是不是？', style: typography.body),
+                                  const SizedBox(height: 5),
+                                  Text('左侧的三个栏是投影文件的一些属性，空着不填也完全没问题。', style: typography.body),
+                                  const SizedBox(height: 5),
+                                  Text('如果您启用了“允许压缩高度”，SlopeCraft会在构建三维结构时尝试依据地图绘制的规律压缩立体地图画的高度，这可以有效避免超过限高（但未必能成功）。', style: typography.body),
+                                  const SizedBox(height: 5),
+                                  Text('下面的两个栏显示了立体地图画的信息，以供参考。', style: typography.body),
+                                  const SizedBox(height: 5),
+                                  Text('这个过程可能会很慢', style: typography.bodyLarge),
+                                ],
                               ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: RepaintBoundary(
-                                  child: Button(
-                                      child: const Text('地图画预览'),
-                                      onPressed: GKernel.instance.scl.SCL_queryStep() >= step.builded && GKernel.instance.convertedImage != null
-                                          ? () {
-                                              showDialog(
-                                                context: context,
-                                                builder: (context) {
-                                                  return StatefulBuilder(
-                                                    builder: (context, setState) {
-                                                      return ContentDialog(
-                                                        title: const Text('地图画预览'),
-                                                        content: AspectRatio(
-                                                          aspectRatio: 1,
-                                                          child: GKernel.instance.convertedImage!,
-                                                        ),
-                                                        actions: [
-                                                          SizedBox(
-                                                            width: 150,
-                                                            child: Button(
-                                                              child: const Text('确定'),
-                                                              onPressed: () {
-                                                                Navigator.pop(context);
-                                                              },
-                                                            ),
-                                                          ),
-                                                        ],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Card(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Text(
+                                    '投影尺寸：${GKernel.instance.scl.SCL_queryStep() >= step.builded ? 'X(${GKernel.instance.dx})/Y(${GKernel.instance.dy})/Z(${GKernel.instance.dz})方块' : ''} ',
+                                    style: typography.bodyLarge),
+                                const SizedBox(height: 5),
+                                Text('方块总数：${GKernel.instance.scl.SCL_queryStep() >= step.builded ? GKernel.instance.scl.SCL_getBlockCounts() : ''}',
+                                    style: typography.bodyLarge),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Card(
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: RepaintBoundary(
+                                        child: Button(
+                                          child: const Text('构建三维结构'),
+                                          onPressed: GKernel.instance.building
+                                              ? null
+                                              : () async {
+                                                  GKernel.instance.building = true;
+                                                  if (GKernel.instance.bI.text.isEmpty) {
+                                                    GKernel.instance.bI.text = '4';
+                                                  }
+                                                  if (GKernel.instance.maH.text.isEmpty) {
+                                                    GKernel.instance.maH.text = '255';
+                                                  }
+                                                  if (int.parse(GKernel.instance.maH.text) < 14) {
+                                                    GKernel.instance.maH.text = '14';
+                                                  }
+                                                  if (GKernel.instance.liteAuthor.text.isEmpty) {
+                                                    GKernel.instance.liteAuthor.text = 'SlopeCraft';
+                                                  }
+                                                  if (GKernel.instance.liteName.text.isEmpty) {
+                                                    GKernel.instance.liteName.text = 'Pixel Paint by SlopeCraft';
+                                                  }
+                                                  if (GKernel.instance.liteRegionName.text.isEmpty) {
+                                                    GKernel.instance.liteRegionName.text = 'Pixel Paint by SlopeCraft';
+                                                  }
+                                                  setState(() {});
+                                                  compute(
+                                                          build3D,
+                                                          BuildArgs(
+                                                              compress: GKernel.instance.compress,
+                                                              maH: int.parse(GKernel.instance.maH.text),
+                                                              bridge: GKernel.instance.bridge,
+                                                              bI: int.parse(GKernel.instance.bI.text),
+                                                              fireProof: GKernel.instance.fireProof,
+                                                              endermanProof: GKernel.instance.endermanProof))
+                                                      .then(
+                                                    (value) {
+                                                      if (value) {
+                                                        Pointer<Int32> x, y, z;
+                                                        x = ffi.calloc.call(1);
+                                                        y = ffi.calloc.call(1);
+                                                        z = ffi.calloc.call(1);
+                                                        GKernel.instance.scl.SCL_get3DSize(x, y, z);
+                                                        GKernel.instance.dx = x.value;
+                                                        GKernel.instance.dy = y.value;
+                                                        GKernel.instance.dz = z.value;
+                                                        ffi.calloc.free(x);
+                                                        ffi.calloc.free(y);
+                                                        ffi.calloc.free(z);
+                                                      }
+                                                      GKernel.instance.getConvertedImage();
+                                                      GKernel.instance.getBlockCounts();
+                                                      GKernel.instance.building = false;
+                                                      setState(() {});
+
+                                                      showDialog(
+                                                        context: context,
+                                                        builder: (context) {
+                                                          return ContentDialog(
+                                                            title: const Text('构建'),
+                                                            content: Text('构建${value ? '成功' : '失败'}'),
+                                                            actions: [
+                                                              SizedBox(
+                                                                width: 150,
+                                                                child: Button(
+                                                                  child: const Text('确定'),
+                                                                  onPressed: () {
+                                                                    Navigator.pop(context);
+                                                                  },
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          );
+                                                        },
                                                       );
                                                     },
                                                   );
                                                 },
-                                              );
-                                            }
-                                          : null),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: RepaintBoundary(
-                                  child: Button(
-                                    child: const Text('材料列表'),
-                                    onPressed: GKernel.instance.scl.SCL_queryStep() >= step.builded
-                                        ? () {
-                                            showDialog(
-                                              context: context,
-                                              builder: (context) {
-                                                return StatefulBuilder(
-                                                  builder: (context, setState) {
-                                                    return ContentDialog(
-                                                      constraints: const BoxConstraints(maxWidth: 700, maxHeight: 600),
-                                                      title: Row(
-                                                        children: [
-                                                          const Text('材料列表'),
-                                                          const Expanded(child: Text('')),
-                                                          Checkbox(
-                                                            checked: GKernel.instance.showString,
-                                                            onChanged: (val) {
-                                                              if (val != null) {
-                                                                GKernel.instance.showString = val;
-                                                              }
-                                                              setState(() {});
-                                                            },
-                                                            content: const Text(
-                                                              '转换单位',
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      content: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                                                        children: [
-                                                          Text(
-                                                            '投影尺寸：${GKernel.instance.dx} X ${GKernel.instance.dy} X ${GKernel.instance.dz}方块',
-                                                            style: typography.bodyLarge,
-                                                          ),
-                                                          Text(
-                                                            '总方块数：${GKernel.instance.scl.SCL_getBlockCounts()}方块',
-                                                            style: typography.bodyLarge,
-                                                          ),
-                                                          Text(
-                                                            '总体积：${GKernel.instance.dx * GKernel.instance.dy * GKernel.instance.dz}方块',
-                                                            style: typography.bodyLarge,
-                                                          ),
-                                                          const SizedBox(height: 10),
-                                                          Container(
-                                                            constraints: const BoxConstraints(maxHeight: 290),
-                                                            child: Row(
-                                                              children: [
-                                                                Expanded(
-                                                                  child: ListView.builder(
-                                                                    controller: _controllerl,
-                                                                    itemCount: GKernel.instance.blocksLeft.length,
-                                                                    itemBuilder: (context, index) {
-                                                                      Item item = GKernel.instance.blocksLeft[index];
-                                                                      return ListTile(
-                                                                        title: Row(
-                                                                          children: [
-                                                                            SizedBox(
-                                                                              height: 16,
-                                                                              width: 16,
-                                                                              child: item.image,
-                                                                            ),
-                                                                            const SizedBox(width: 10),
-                                                                            Text('${item.name}：'),
-                                                                            const Expanded(child: Text('')),
-                                                                            Text('${GKernel.instance.showString ? item.countb : item.count}'),
-                                                                          ],
-                                                                        ),
-                                                                      );
-                                                                    },
-                                                                  ),
-                                                                ),
-                                                                Expanded(
-                                                                  child: ListView.builder(
-                                                                    controller: _controllerr,
-                                                                    itemCount: GKernel.instance.blocksRight.length,
-                                                                    itemBuilder: (context, index) {
-                                                                      Item item = GKernel.instance.blocksRight[index];
-                                                                      return ListTile(
-                                                                        title: Row(
-                                                                          children: [
-                                                                            SizedBox(
-                                                                              height: 16,
-                                                                              width: 16,
-                                                                              child: item.image,
-                                                                            ),
-                                                                            const SizedBox(width: 10),
-                                                                            Text('${item.name}：'),
-                                                                            const Expanded(child: Text('')),
-                                                                            Text('${GKernel.instance.showString ? item.countb : item.count}'),
-                                                                          ],
-                                                                        ),
-                                                                      );
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: RepaintBoundary(
+                                        child: Button(
+                                            child: const Text('地图画预览'),
+                                            onPressed: GKernel.instance.scl.SCL_queryStep() >= step.builded && GKernel.instance.convertedImage != null
+                                                ? () {
+                                                    showDialog(
+                                                      context: context,
+                                                      builder: (context) {
+                                                        return StatefulBuilder(
+                                                          builder: (context, setState) {
+                                                            return ContentDialog(
+                                                              title: const Text('地图画预览'),
+                                                              content: AspectRatio(
+                                                                aspectRatio: 1,
+                                                                child: GKernel.instance.convertedImage!,
+                                                              ),
+                                                              actions: [
+                                                                SizedBox(
+                                                                  width: 150,
+                                                                  child: Button(
+                                                                    child: const Text('确定'),
+                                                                    onPressed: () {
+                                                                      Navigator.pop(context);
                                                                     },
                                                                   ),
                                                                 ),
                                                               ],
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      actions: [
-                                                        Button(
-                                                          child: const Text('导出到Excel'),
-                                                          onPressed: () async {
-                                                            String? outputFile = await file_picker.FilePicker.platform.saveFile(
-                                                              dialogTitle: '导出',
-                                                              fileName: '材料列表.xlsx',
                                                             );
-
-                                                            if (outputFile == null) {
-                                                              return;
-                                                            }
-
-                                                            var excel = Excel.createExcel();
-                                                            Sheet sheetObject = excel['Sheet1'];
-                                                            sheetObject.merge(CellIndex.indexByString("A1"), CellIndex.indexByString("C1"),
-                                                                customValue: "Generated By SlopeCraft");
-                                                            sheetObject.insertRowIterables(['方块种类', '个数', '换算'], 1);
-                                                            for (int i = 0; i < GKernel.instance.blocks.length; i++) {
-                                                              sheetObject.insertRowIterables([
-                                                                GKernel.instance.blocks[i].name,
-                                                                '${GKernel.instance.blocks[i].count}个',
-                                                                GKernel.instance.blocks[i].countb
-                                                              ], i + 2);
-                                                            }
-
-                                                            var fileBytes = excel.save();
-
-                                                            File(outputFile)
-                                                              ..createSync(recursive: true)
-                                                              ..writeAsBytes(fileBytes!);
                                                           },
-                                                        ),
-                                                        Button(
-                                                          child: const Text('确定'),
-                                                          onPressed: () {
-                                                            Navigator.pop(context);
-                                                          },
-                                                        ),
-                                                      ],
+                                                        );
+                                                      },
                                                     );
-                                                  },
+                                                  }
+                                                : null),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: RepaintBoundary(
+                                        child: Button(
+                                          child: const Text('材料列表'),
+                                          onPressed: GKernel.instance.scl.SCL_queryStep() >= step.builded
+                                              ? () {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (context) {
+                                                      return StatefulBuilder(
+                                                        builder: (context, setState) {
+                                                          return ContentDialog(
+                                                            constraints: const BoxConstraints(maxWidth: 700, maxHeight: 600),
+                                                            title: Row(
+                                                              children: [
+                                                                const Text('材料列表'),
+                                                                const Expanded(child: Text('')),
+                                                                Checkbox(
+                                                                  checked: GKernel.instance.showString,
+                                                                  onChanged: (val) {
+                                                                    if (val != null) {
+                                                                      GKernel.instance.showString = val;
+                                                                    }
+                                                                    setState(() {});
+                                                                  },
+                                                                  content: const Text(
+                                                                    '转换单位',
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            content: Column(
+                                                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                                                              children: [
+                                                                Text(
+                                                                  '投影尺寸：${GKernel.instance.dx} X ${GKernel.instance.dy} X ${GKernel.instance.dz}方块',
+                                                                  style: typography.bodyLarge,
+                                                                ),
+                                                                Text(
+                                                                  '总方块数：${GKernel.instance.scl.SCL_getBlockCounts()}方块',
+                                                                  style: typography.bodyLarge,
+                                                                ),
+                                                                Text(
+                                                                  '总体积：${GKernel.instance.dx * GKernel.instance.dy * GKernel.instance.dz}方块',
+                                                                  style: typography.bodyLarge,
+                                                                ),
+                                                                const SizedBox(height: 10),
+                                                                Container(
+                                                                  constraints: const BoxConstraints(maxHeight: 290),
+                                                                  child: Row(
+                                                                    children: [
+                                                                      Expanded(
+                                                                        child: ListView.builder(
+                                                                          controller: _controllerl,
+                                                                          itemCount: GKernel.instance.blocksLeft.length,
+                                                                          itemBuilder: (context, index) {
+                                                                            Item item = GKernel.instance.blocksLeft[index];
+                                                                            return ListTile(
+                                                                              title: Row(
+                                                                                children: [
+                                                                                  SizedBox(
+                                                                                    height: 16,
+                                                                                    width: 16,
+                                                                                    child: item.image,
+                                                                                  ),
+                                                                                  const SizedBox(width: 10),
+                                                                                  Text('${item.name}：'),
+                                                                                  const Expanded(child: Text('')),
+                                                                                  Text('${GKernel.instance.showString ? item.countb : item.count}'),
+                                                                                ],
+                                                                              ),
+                                                                            );
+                                                                          },
+                                                                        ),
+                                                                      ),
+                                                                      Expanded(
+                                                                        child: ListView.builder(
+                                                                          controller: _controllerr,
+                                                                          itemCount: GKernel.instance.blocksRight.length,
+                                                                          itemBuilder: (context, index) {
+                                                                            Item item = GKernel.instance.blocksRight[index];
+                                                                            return ListTile(
+                                                                              title: Row(
+                                                                                children: [
+                                                                                  SizedBox(
+                                                                                    height: 16,
+                                                                                    width: 16,
+                                                                                    child: item.image,
+                                                                                  ),
+                                                                                  const SizedBox(width: 10),
+                                                                                  Text('${item.name}：'),
+                                                                                  const Expanded(child: Text('')),
+                                                                                  Text('${GKernel.instance.showString ? item.countb : item.count}'),
+                                                                                ],
+                                                                              ),
+                                                                            );
+                                                                          },
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            actions: [
+                                                              Button(
+                                                                child: const Text('导出到Excel'),
+                                                                onPressed: () async {
+                                                                  String? outputFile = await file_picker.FilePicker.platform.saveFile(
+                                                                    dialogTitle: '导出',
+                                                                    fileName: '材料列表.xlsx',
+                                                                  );
+
+                                                                  if (outputFile == null) {
+                                                                    return;
+                                                                  }
+
+                                                                  var excel = Excel.createExcel();
+                                                                  Sheet sheetObject = excel['Sheet1'];
+                                                                  sheetObject.merge(CellIndex.indexByString("A1"), CellIndex.indexByString("C1"),
+                                                                      customValue: "Generated By SlopeCraft");
+                                                                  sheetObject.insertRowIterables(['方块种类', '个数', '换算'], 1);
+                                                                  for (int i = 0; i < GKernel.instance.blocks.length; i++) {
+                                                                    sheetObject.insertRowIterables([
+                                                                      GKernel.instance.blocks[i].name,
+                                                                      '${GKernel.instance.blocks[i].count}个',
+                                                                      GKernel.instance.blocks[i].countb
+                                                                    ], i + 2);
+                                                                  }
+
+                                                                  var fileBytes = excel.save();
+
+                                                                  File(outputFile)
+                                                                    ..createSync(recursive: true)
+                                                                    ..writeAsBytes(fileBytes!);
+                                                                },
+                                                              ),
+                                                              Button(
+                                                                child: const Text('确定'),
+                                                                onPressed: () {
+                                                                  Navigator.pop(context);
+                                                                },
+                                                              ),
+                                                            ],
+                                                          );
+                                                        },
+                                                      );
+                                                    },
+                                                  );
+                                                }
+                                              : null,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: RepaintBoundary(
+                                        child: FilledButton(
+                                          child: const Text('导出！'),
+                                          onPressed: () async {
+                                            if (GKernel.instance.scl.SCL_queryStep() < step.builded) {
+                                              showDialog(
+                                                builder: (context) {
+                                                  return ContentDialog(
+                                                    title: const Text('无法跳步操作'),
+                                                    content: const Text('未构建三维结构'),
+                                                    actions: [
+                                                      SizedBox(
+                                                        width: 150,
+                                                        child: Button(
+                                                            child: const Text('确定'),
+                                                            onPressed: () {
+                                                              Navigator.pop(context);
+                                                            }),
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                                context: context,
+                                              );
+                                              return;
+                                            }
+
+                                            String? outputFile = await file_picker.FilePicker.platform.saveFile(
+                                              dialogTitle: '导出',
+                                              fileName: '',
+                                              allowedExtensions: ['litematic'],
+                                              type: file_picker.FileType.custom,
+                                              lockParentWindow: true,
+                                            );
+
+                                            if (outputFile == null) {
+                                              return;
+                                            }
+                                            outputFile = outputFile + '.litematic';
+
+                                            final gbk = const GbkCodec(allowInvalid: false).encode(outputFile);
+
+                                            Pointer<Int8> pg = ffi.calloc.call(gbk.length + 1);
+                                            for (int i = 0; i < gbk.length; i++) {
+                                              pg.elementAt(i).value = gbk[i];
+                                            }
+                                            pg.elementAt(gbk.length).value = 0;
+                                            GKernel.instance.scl.SCL_exportAsLitematic(
+                                                pg,
+                                                GKernel.instance.liteName.text.toNativeUtf8().cast(),
+                                                GKernel.instance.liteAuthor.text.toNativeUtf8().cast(),
+                                                GKernel.instance.liteRegionName.text.toNativeUtf8().cast(),
+                                                nullptr);
+                                            ffi.calloc.free(pg);
+                                            showDialog(
+                                              builder: (context) {
+                                                return ContentDialog(
+                                                  title: const Text('导出完成'),
+                                                  content: const Text('已导出投影文件'),
+                                                  actions: [
+                                                    SizedBox(
+                                                      width: 150,
+                                                      child: FilledButton(
+                                                        child: const Text('确定'),
+                                                        onPressed: () {
+                                                          Navigator.pop(context);
+                                                        },
+                                                      ),
+                                                    ),
+                                                  ],
                                                 );
                                               },
-                                            );
-                                          }
-                                        : null,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: RepaintBoundary(
-                                  child: FilledButton(
-                                    child: const Text('导出！'),
-                                    onPressed: () async {
-                                      if (GKernel.instance.scl.SCL_queryStep() < step.builded) {
-                                        showDialog(
-                                          builder: (context) {
-                                            return ContentDialog(
-                                              title: const Text('无法跳步操作'),
-                                              content: const Text('未构建三维结构'),
-                                              actions: [
-                                                SizedBox(
-                                                  width: 150,
-                                                  child: Button(
-                                                      child: const Text('确定'),
-                                                      onPressed: () {
-                                                        Navigator.pop(context);
-                                                      }),
-                                                ),
-                                              ],
+                                              context: context,
                                             );
                                           },
-                                          context: context,
-                                        );
-                                        return;
-                                      }
-
-                                      String? outputFile = await file_picker.FilePicker.platform.saveFile(
-                                        dialogTitle: '导出',
-                                        fileName: '${GKernel.instance.liteName.text}.litematic',
-                                      );
-
-                                      if (outputFile == null) {
-                                        return;
-                                      }
-                                      GKernel.instance.scl.SCL_exportAsLitematic(
-                                          path.basename(outputFile).toNativeUtf8().cast(),
-                                          GKernel.instance.liteName.text.toNativeUtf8().cast(),
-                                          GKernel.instance.liteAuthor.text.toNativeUtf8().cast(),
-                                          GKernel.instance.liteRegionName.text.toNativeUtf8().cast(),
-                                          nullptr);
-                                      showDialog(
-                                        builder: (context) {
-                                          return ContentDialog(
-                                            title: const Text('导出完成'),
-                                            content: const Text('已导出投影文件'),
-                                            actions: [
-                                              SizedBox(
-                                                width: 150,
-                                                child: FilledButton(
-                                                  child: const Text('确定'),
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  },
-                                                ),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                        context: context,
-                                      );
-                                    },
-                                  ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  ],
+                    flex: 3,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            Card(
+              child: RepaintBoundary(
+                child: ProgressBar(
+                  value: GKernel.instance.building ? null : (GKernel.instance.scl.SCL_queryStep() >= step.builded ? 100.0 : 0.0),
                 ),
               ),
-              flex: 3,
             ),
           ],
         ),

@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 
+import 'package:enough_convert/enough_convert.dart';
 import 'package:excel/excel.dart';
 import 'package:ffi/ffi.dart' as ffi;
 import 'package:file_picker/file_picker.dart' as file_picker;
@@ -8,6 +10,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path;
+import 'package:win32/win32.dart';
 
 import 'kernel.dart';
 import 'scl_interface.dart';
@@ -261,110 +264,56 @@ class _ExportStructureState extends State<ExportStructure> {
                                       if (GKernel.instance.liteRegionName.text.isEmpty) {
                                         GKernel.instance.liteRegionName.text = 'Pixel Paint by SlopeCraft';
                                       }
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) {
-                                          return ContentDialog(
-                                            constraints: const BoxConstraints(
-                                              maxHeight: 150,
-                                              maxWidth: 400,
-                                            ),
-                                            title: const Text('构建'),
-                                            content: Center(
-                                              child: FutureBuilder<void>(
-                                                future: compute(
-                                                    build3D,
-                                                    BuildArgs(
-                                                        compress: GKernel.instance.compress,
-                                                        maH: int.parse(GKernel.instance.maH.text),
-                                                        bridge: GKernel.instance.bridge,
-                                                        bI: int.parse(GKernel.instance.bI.text),
-                                                        fireProof: GKernel.instance.fireProof,
-                                                        endermanProof: GKernel.instance.endermanProof)),
-                                                builder: (BuildContext context, AsyncSnapshot snapshot) {
-                                                  if (snapshot.connectionState == ConnectionState.done) {
-                                                    if (snapshot.hasError) {
-                                                      return Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: [
-                                                          Text(
-                                                            '构建失败： ${snapshot.error}',
-                                                            style: typography.bodyLarge,
-                                                          ),
-                                                          const SizedBox(height: 10),
-                                                          Row(
-                                                            children: [
-                                                              const Expanded(child: Text('')),
-                                                              SizedBox(
-                                                                width: 150,
-                                                                child: FilledButton(
-                                                                  child: const Text('确定'),
-                                                                  onPressed: () {
-                                                                    Navigator.pop(context);
-                                                                  },
-                                                                ),
-                                                              )
-                                                            ],
-                                                          )
-                                                        ],
-                                                      );
-                                                    } else {
-                                                      return Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: [
-                                                          Text(
-                                                            '构建${snapshot.data ? '成功' : '失败：未知'}',
-                                                            style: typography.bodyLarge,
-                                                          ),
-                                                          const SizedBox(height: 10),
-                                                          Row(
-                                                            children: [
-                                                              const Expanded(child: Text('')),
-                                                              SizedBox(
-                                                                width: 150,
-                                                                child: FilledButton(
-                                                                  child: const Text('确定'),
-                                                                  onPressed: () {
-                                                                    Navigator.pop(context);
-                                                                    if (snapshot.data) {
-                                                                      Pointer<Int32> x, y, z;
-                                                                      x = ffi.malloc.call(1);
-                                                                      y = ffi.malloc.call(1);
-                                                                      z = ffi.malloc.call(1);
-                                                                      GKernel.instance.scl.SCL_get3DSize(x, y, z);
-                                                                      GKernel.instance.dx = x.value;
-                                                                      GKernel.instance.dy = y.value;
-                                                                      GKernel.instance.dz = z.value;
-                                                                      ffi.malloc.free(x);
-                                                                      ffi.malloc.free(y);
-                                                                      ffi.malloc.free(z);
-                                                                    }
-                                                                    GKernel.instance.getConvertedImage();
-                                                                    GKernel.instance.getBlockCounts();
-                                                                    setState(() {});
-                                                                  },
-                                                                ),
-                                                              )
-                                                            ],
-                                                          )
-                                                        ],
-                                                      );
-                                                    }
-                                                  } else {
-                                                    return Row(
-                                                      children: const [
-                                                        ProgressRing(),
-                                                        SizedBox(width: 10),
-                                                        Text('正在构建三维模型'),
-                                                      ],
-                                                    );
-                                                  }
-                                                },
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      );
+                                      setState(() {});
+                                      compute(
+                                              build3D,
+                                              BuildArgs(
+                                                  compress: GKernel.instance.compress,
+                                                  maH: int.parse(GKernel.instance.maH.text),
+                                                  bridge: GKernel.instance.bridge,
+                                                  bI: int.parse(GKernel.instance.bI.text),
+                                                  fireProof: GKernel.instance.fireProof,
+                                                  endermanProof: GKernel.instance.endermanProof))
+                                          .then((value) {
+                                        if (value) {
+                                          Pointer<Int32> x, y, z;
+                                          x = ffi.calloc.call(1);
+                                          y = ffi.calloc.call(1);
+                                          z = ffi.calloc.call(1);
+                                          GKernel.instance.scl.SCL_get3DSize(x, y, z);
+                                          GKernel.instance.dx = x.value;
+                                          GKernel.instance.dy = y.value;
+                                          GKernel.instance.dz = z.value;
+                                          ffi.calloc.free(x);
+                                          ffi.calloc.free(y);
+                                          ffi.calloc.free(z);
+                                        }
+                                        GKernel.instance.getConvertedImage();
+                                        GKernel.instance.getBlockCounts();
+                                        GKernel.instance.building = false;
+                                        setState(() {});
+
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            return ContentDialog(
+                                              title: const Text('构建'),
+                                              content: Text('构建${value ? '成功' : '失败'}'),
+                                              actions: [
+                                                SizedBox(
+                                                  width: 150,
+                                                  child: Button(
+                                                    child: const Text('确定'),
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                    },
+                                                  ),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        );
+                                      });
                                     },
                                   ),
                                 ),
@@ -597,13 +546,25 @@ class _ExportStructureState extends State<ExportStructure> {
 
                                       String? outputFile = await file_picker.FilePicker.platform.saveFile(
                                         dialogTitle: '导出',
-                                        fileName: '${GKernel.instance.liteName.text}.nbt',
+                                        fileName: '',
+                                        allowedExtensions: ['nbt'],
+                                        type: file_picker.FileType.custom,
+                                        lockParentWindow: true,
                                       );
 
                                       if (outputFile == null) {
                                         return;
                                       }
-                                      GKernel.instance.scl.SCL_exportAsStructure(path.basename(outputFile).toNativeUtf8().cast(), nullptr);
+
+                                      final gbk = const GbkCodec().encode(outputFile + '.nbt');
+
+                                      Pointer<Int8> pg = ffi.calloc.call(gbk.length + 1);
+                                      for (int i = 0; i < gbk.length; i++) {
+                                        pg.elementAt(i).value = gbk[i];
+                                      }
+                                      pg.elementAt(gbk.length).value = 0;
+                                      GKernel.instance.scl.SCL_exportAsStructure(pg, nullptr);
+                                      ffi.calloc.free(pg);
                                       showDialog(
                                         builder: (context) {
                                           return ContentDialog(
