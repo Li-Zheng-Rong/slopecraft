@@ -98,7 +98,6 @@ class _ImportPictureState extends State<ImportPicture> {
                   child: DropTarget(
                     onDragDone: (detail) async {
                       setState(() {
-                        // _list.addAll(detail.files);
                         List<String> p = [];
                         for (var item in detail.files) {
                           p.add(item.path);

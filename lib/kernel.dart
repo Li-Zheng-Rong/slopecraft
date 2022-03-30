@@ -840,11 +840,15 @@ class GKernel {
             title: const Text('读取图片失败'),
             content: const Text('请检查图片'),
             actions: [
-              Button(
-                  child: const Text('Ok'),
+              SizedBox(
+                width: 150,
+                child: Button(
+                  child: const Text('确定'),
                   onPressed: () {
                     Navigator.pop(context);
-                  })
+                  },
+                ),
+              ),
             ],
           );
         },
@@ -854,6 +858,29 @@ class GKernel {
     }
     imgHeight = rawImage!.height;
     imgWidth = rawImage!.width;
+    if (imgHeight < 16 || imgWidth < 16) {
+      await showDialog(
+        builder: (context) {
+          return ContentDialog(
+            title: const Text('读取图片出错'),
+            content: const Text('请选择大于等于16x16像素的图片'),
+            actions: [
+              SizedBox(
+                width: 150,
+                child: Button(
+                  child: const Text('确定'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ),
+            ],
+          );
+        },
+        context: context,
+      );
+      return;
+    }
     height = null;
     width = null;
     var d = rawImage!.getBytes(format: img.Format.argb);
@@ -964,7 +991,11 @@ class GKernel {
               var p = img.decodeNamedImage(f, path.extension(item));
 
               if (p != null) {
-                multiRaw.add(item);
+                if (p.height < 16 || p.width < 16) {
+                  failed++;
+                } else {
+                  multiRaw.add(item);
+                }
               } else {
                 failed++;
               }
@@ -1056,6 +1087,9 @@ ExportMultiReturn exportMulti(ExportMultiArgs args) {
   }
   imgHeightC = multiRawCache.height;
   imgWidthC = multiRawCache.width;
+  if (imgHeightC < 16 || imgWidthC < 16) {
+    return ExportMultiReturn(s: false, p: args.p);
+  }
   var d = multiRawCache.getBytes(format: img.Format.argb);
 
   Pointer<Uint32> pointer = ffi.calloc.allocate(sizeOf<Uint32>() * multiRawCache.length);

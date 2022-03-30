@@ -288,7 +288,7 @@ class _ExportStructureState extends State<ExportStructure> {
                                               if (GKernel.instance.liteRegionName.text.isEmpty) {
                                                 GKernel.instance.liteRegionName.text = 'Pixel Paint by SlopeCraft';
                                               }
-                                              var t0 = DateTime.now();
+                                              // var t0 = DateTime.now();
                                               GKernel.instance.threads = int.parse(GKernel.instance.th.text);
                                               if (GKernel.instance.multiSingleThread) {
                                                 if (!GKernel.instance.verbose) {
@@ -391,13 +391,13 @@ class _ExportStructureState extends State<ExportStructure> {
                                                   }
                                                 }
                                               }
-                                              var t1 = DateTime.now();
+                                              // var t1 = DateTime.now();
                                               showDialog(
                                                 context: context,
                                                 builder: (context) {
                                                   return ContentDialog(
                                                     title: const Text('完成'),
-                                                    content: Text('${t1.difference(t0).inMilliseconds}ms'),
+                                                    content: const Text('转换完成'),
                                                     actions: [
                                                       Button(
                                                         child: const Text('确定'),
@@ -413,6 +413,37 @@ class _ExportStructureState extends State<ExportStructure> {
                                               GKernel.instance.building = false;
                                               GKernel.instance.multiProgress.value = 100.0;
                                               setState(() {});
+                                              if (GKernel.instance.multiFail.isNotEmpty) {
+                                                await showDialog(
+                                                  context: context,
+                                                  builder: (context) {
+                                                    return ContentDialog(
+                                                      title: const Text('以下文件转换失败：'),
+                                                      constraints: const BoxConstraints(maxHeight: 600, maxWidth: 1000),
+                                                      content: ListView.builder(
+                                                        padding: const EdgeInsets.only(right: 16.0),
+                                                        itemCount: GKernel.instance.multiFail.length,
+                                                        itemBuilder: (context, index) {
+                                                          return ListTile(
+                                                            title: Text(
+                                                              GKernel.instance.multiFail[index],
+                                                              overflow: TextOverflow.ellipsis,
+                                                            ),
+                                                          );
+                                                        },
+                                                      ),
+                                                      actions: [
+                                                        Button(
+                                                          child: const Text('确定'),
+                                                          onPressed: () {
+                                                            Navigator.pop(context);
+                                                          },
+                                                        ),
+                                                      ],
+                                                    );
+                                                  },
+                                                );
+                                              }
                                             },
                                     ),
                                   ),
