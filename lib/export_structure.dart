@@ -73,9 +73,23 @@ class _ExportStructureState extends State<ExportStructure> {
               const SizedBox(width: 8),
               SizedBox(
                 width: 100,
-                child: TextBox(
-                  controller: GKernel.instance.th,
-                  readOnly: GKernel.instance.multiSingleThread,
+                child: RepaintBoundary(
+                  child: Combobox<int>(
+                    placeholder: const Text('线程数'),
+                    isExpanded: true,
+                    items: [1, 2, 3, 4, 5, 6, 7, 8]
+                        .map(
+                          (e) => ComboboxItem<int>(
+                            value: e,
+                            child: Text('$e'),
+                          ),
+                        )
+                        .toList(),
+                    value: GKernel.instance.threads,
+                    onChanged: (value) {
+                      if (value != null) setState(() => GKernel.instance.threads = value);
+                    },
+                  ),
                 ),
               ),
             ],
@@ -319,7 +333,6 @@ class _ExportStructureState extends State<ExportStructure> {
                                                     GKernel.instance.liteRegionName.text = 'Pixel Paint by SlopeCraft';
                                                   }
                                                   // var t0 = DateTime.now();
-                                                  GKernel.instance.threads = int.parse(GKernel.instance.th.text);
                                                   if (GKernel.instance.multiSingleThread) {
                                                     if (!GKernel.instance.verbose) {
                                                       GKernel.instance.multiProgress.value = null;

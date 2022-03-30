@@ -473,12 +473,11 @@ class GKernel {
   );
   Image? show;
   ValueNotifier<bool> building = ValueNotifier<bool>(false);
-  TextEditingController th = TextEditingController(text: '8');
   int compress = compressSettings.Both;
   TextEditingController maH = TextEditingController(text: '255');
   int bridge = glassBridgeSettings.noBridge;
   TextEditingController bI = TextEditingController(text: '4');
-  bool fireProof = true;
+  bool fireProof = false;
   bool endermanProof = false;
   bool showraw = true;
   TextEditingController liteName = TextEditingController(text: 'Pixel Paint by SlopeCraft');

@@ -2,6 +2,23 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'package:system_theme/system_theme.dart';
+import 'package:win32/win32.dart';
+import 'package:ffi/ffi.dart' as ffi;
+import 'dart:ffi';
+
+bool isWindowsVersionOrGreater(int dwMajor, int dwMinor, int dwBuild) {
+  Pointer<OSVERSIONINFOEX> osvi = ffi.malloc.call();
+  osvi.ref.dwOSVersionInfoSize = sizeOf<OSVERSIONINFOEX>();
+  osvi.ref.dwMajorVersion = dwMajor;
+  osvi.ref.dwMinorVersion = dwMinor;
+  osvi.ref.dwBuildNumber = dwBuild;
+  int dwlConditionMask = 0;
+  var op = VER_GREATER_EQUAL;
+  dwlConditionMask = VerSetConditionMask(dwlConditionMask, VER_MAJORVERSION, op);
+  dwlConditionMask = VerSetConditionMask(dwlConditionMask, VER_MINORVERSION, op);
+  dwlConditionMask = VerSetConditionMask(dwlConditionMask, VER_BUILDNUMBER, op);
+  return (VerifyVersionInfo(osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER, dwlConditionMask) != FALSE);
+}
 
 enum NavigationIndicators { sticky, end }
 
@@ -34,7 +51,12 @@ class AppTheme extends ChangeNotifier {
     notifyListeners();
   }
 
-  WindowEffect _windowEffect = WindowEffect.acrylic;
+  WindowEffect _windowEffect = isWindowsVersionOrGreater(10, 0, 22000)
+      ? WindowEffect.acrylic
+      : IsWindows10OrGreater() == 1
+          ? WindowEffect.acrylic
+          : WindowEffect.aero;
+
   WindowEffect get windowEffect => _windowEffect;
   set windowEffect(WindowEffect windowEffect) {
     _windowEffect = windowEffect;
