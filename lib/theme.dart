@@ -54,7 +54,7 @@ class AppTheme extends ChangeNotifier {
   WindowEffect _windowEffect = isWindowsVersionOrGreater(10, 0, 22000)
       ? WindowEffect.acrylic
       : IsWindows10OrGreater() == 1
-          ? WindowEffect.acrylic
+          ? WindowEffect.disabled
           : WindowEffect.aero;
 
   WindowEffect get windowEffect => _windowEffect;

@@ -112,48 +112,53 @@ class About extends StatelessWidget {
                     const SizedBox(height: 8),
                     RadioButton(
                       checked: appTheme.windowEffect == WindowEffect.acrylic,
-                      // onChanged: GKernel.instance.osversion == OSVersion.win11
-                      onChanged: (val) {
-                        if (val) {
-                          appTheme.windowEffect = WindowEffect.acrylic;
-                          appTheme.setEffect(WindowEffect.acrylic, context);
-                        }
-                      }
-                      // : null,
-                      ,
+                      onChanged: GKernel.instance.osversion == OSVersion.win11
+                          ? (val) {
+                              if (val) {
+                                appTheme.windowEffect = WindowEffect.acrylic;
+                                appTheme.setEffect(WindowEffect.acrylic, context);
+                              }
+                            }
+                          : null,
                       content: const Text('Acrylic   (Windows 11)'),
                     ),
                     const SizedBox(height: 8),
                     RadioButton(
                       checked: appTheme.windowEffect == WindowEffect.mica,
-                      onChanged: (val) {
-                        if (val) {
-                          appTheme.windowEffect = WindowEffect.mica;
-                          appTheme.setEffect(WindowEffect.mica, context);
-                        }
-                      },
+                      onChanged: GKernel.instance.osversion == OSVersion.win11
+                          ? (val) {
+                              if (val) {
+                                appTheme.windowEffect = WindowEffect.mica;
+                                appTheme.setEffect(WindowEffect.mica, context);
+                              }
+                            }
+                          : null,
                       content: const Text('Mica      (Windows 11)'),
                     ),
                     const SizedBox(height: 8),
                     RadioButton(
                       checked: appTheme.windowEffect == WindowEffect.tabbed,
-                      onChanged: (val) {
-                        if (val) {
-                          appTheme.windowEffect = WindowEffect.tabbed;
-                          appTheme.setEffect(WindowEffect.tabbed, context);
-                        }
-                      },
+                      onChanged: GKernel.instance.osversion == OSVersion.win11
+                          ? (val) {
+                              if (val) {
+                                appTheme.windowEffect = WindowEffect.tabbed;
+                                appTheme.setEffect(WindowEffect.tabbed, context);
+                              }
+                            }
+                          : null,
                       content: const Text('Tabbed  (Windows 11)'),
                     ),
                     const SizedBox(height: 8),
                     RadioButton(
                       checked: appTheme.windowEffect == WindowEffect.aero,
-                      onChanged: (val) {
-                        if (val) {
-                          appTheme.windowEffect = WindowEffect.aero;
-                          appTheme.setEffect(WindowEffect.aero, context);
-                        }
-                      },
+                      onChanged: GKernel.instance.osversion == OSVersion.win7
+                          ? (val) {
+                              if (val) {
+                                appTheme.windowEffect = WindowEffect.aero;
+                                appTheme.setEffect(WindowEffect.aero, context);
+                              }
+                            }
+                          : null,
                       content: const Text('Aero      (Windows 7)'),
                     ),
                   ],
