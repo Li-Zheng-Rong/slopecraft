@@ -11,6 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path;
 import 'package:win32/win32.dart';
+import 'package:worker_manager/worker_manager.dart' as tp;
 
 import 'kernel.dart';
 import 'scl_interface.dart';
@@ -42,6 +43,410 @@ class _ExportStructureState extends State<ExportStructure> {
   @override
   Widget build(BuildContext context) {
     Typography typography = FluentTheme.of(context).typography;
+    if (GKernel.instance.multiMode) {
+      return ScaffoldPage(
+        header: PageHeader(
+          title: const Text('导出为结构文件-批量模式'),
+          commandBar: Row(
+            children: [
+              SizedBox(
+                width: 100,
+                child: Checkbox(
+                  checked: GKernel.instance.verbose,
+                  content: const Text('进度显示'),
+                  onChanged: (val) {
+                    GKernel.instance.verbose = val!;
+                    setState(() {});
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 200,
+                child: Checkbox(
+                  checked: !GKernel.instance.multiSingleThread,
+                  content: const Text('启用多线程（实验性）'),
+                  onChanged: (val) {
+                    GKernel.instance.multiSingleThread = !(val!);
+                    setState(() {});
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 100,
+                child: TextBox(
+                  controller: GKernel.instance.th,
+                  readOnly: GKernel.instance.multiSingleThread,
+                ),
+              ),
+            ],
+          ),
+        ),
+        content: Padding(
+          padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Card(
+              //   child: TextBox(
+              //     header: '导出文件',
+              //     placeholder: '\${PICTURE_PARENT_PATH}/\${PICTURE_BASENAME}',
+              //     controller: GKernel.instance.multiExportFile,
+              //     readOnly: true,
+              //   ),
+              // ),
+              // const SizedBox(height: 10),
+              Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: RepaintBoundary(
+                        child: Card(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              InfoLabel(
+                                label: '压缩高度',
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    Checkbox(
+                                      checked: GKernel.instance.compress == compressSettings.Both || GKernel.instance.compress == compressSettings.NaturalOnly,
+                                      onChanged: GKernel.instance.building
+                                          ? null
+                                          : (value) => setState(() {
+                                                if (value == true) {
+                                                  if (GKernel.instance.compress == compressSettings.noCompress) {
+                                                    GKernel.instance.compress = compressSettings.NaturalOnly;
+                                                  } else {
+                                                    GKernel.instance.compress = compressSettings.Both;
+                                                  }
+                                                } else {
+                                                  if (GKernel.instance.compress == compressSettings.Both) {
+                                                    GKernel.instance.compress = compressSettings.ForcedOnly;
+                                                  } else {
+                                                    GKernel.instance.compress = compressSettings.noCompress;
+                                                  }
+                                                }
+                                              }),
+                                      content: const Text('无损压缩'),
+                                    ),
+                                    Checkbox(
+                                      checked: GKernel.instance.compress == compressSettings.Both || GKernel.instance.compress == compressSettings.ForcedOnly,
+                                      onChanged: GKernel.instance.building
+                                          ? null
+                                          : (value) => setState(() {
+                                                if (value == true) {
+                                                  if (GKernel.instance.compress == compressSettings.noCompress) {
+                                                    GKernel.instance.compress = compressSettings.ForcedOnly;
+                                                  } else {
+                                                    GKernel.instance.compress = compressSettings.Both;
+                                                  }
+                                                } else {
+                                                  if (GKernel.instance.compress == compressSettings.Both) {
+                                                    GKernel.instance.compress = compressSettings.NaturalOnly;
+                                                  } else {
+                                                    GKernel.instance.compress = compressSettings.noCompress;
+                                                  }
+                                                }
+                                              }),
+                                      content: const Text('智能有损压缩'),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        const Text('最大允许高度'),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: TextBox(
+                                            placeholder: '255',
+                                            controller: GKernel.instance.maH,
+                                            keyboardType: TextInputType.number,
+                                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                            maxLength: 4,
+                                            readOnly: GKernel.instance.building,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Divider(),
+                              const SizedBox(height: 8),
+                              InfoLabel(
+                                label: '搭桥',
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    Checkbox(
+                                      checked: GKernel.instance.bridge == glassBridgeSettings.withBridge,
+                                      onChanged: GKernel.instance.building
+                                          ? null
+                                          : (value) => setState(() {
+                                                if (value == true) {
+                                                  GKernel.instance.bridge = glassBridgeSettings.withBridge;
+                                                } else {
+                                                  GKernel.instance.bridge = glassBridgeSettings.noBridge;
+                                                }
+                                              }),
+                                      content: const Text('允许搭桥'),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        const Text('搭桥间隔'),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: TextBox(
+                                            placeholder: '4',
+                                            controller: GKernel.instance.bI,
+                                            keyboardType: TextInputType.number,
+                                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                            maxLength: 4,
+                                            readOnly: GKernel.instance.building,
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Divider(),
+                              const SizedBox(height: 8),
+                              InfoLabel(
+                                label: '其他选项',
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    Checkbox(
+                                      checked: GKernel.instance.fireProof,
+                                      onChanged: GKernel.instance.building ? null : (value) => setState(() => GKernel.instance.fireProof = value!),
+                                      content: const Text('防火'),
+                                    ),
+                                    Checkbox(
+                                      checked: GKernel.instance.endermanProof,
+                                      onChanged: GKernel.instance.building ? null : (value) => setState(() => GKernel.instance.endermanProof = value!),
+                                      content: const Text('防末影人'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      flex: 2,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: RepaintBoundary(
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: Card(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    Text('最后一步，将立体地图画导出为结构文件。（除非你真的需要，否则建议导出为投影文件）', style: typography.bodyLarge),
+                                    const SizedBox(height: 5),
+                                    Text('如果您启用了“允许压缩高度”，SlopeCraft会在构建三维结构时尝试依据地图绘制的规律压缩立体地图画的高度，这可以有效避免超过限高（但未必能成功）。', style: typography.bodyLarge),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Card(
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: FilledButton(
+                                      child: const Text('导出'),
+                                      onPressed: GKernel.instance.building
+                                          ? null
+                                          : () async {
+                                              GKernel.instance.building = true;
+                                              setState(() {});
+                                              if (GKernel.instance.bI.text.isEmpty) {
+                                                GKernel.instance.bI.text = '4';
+                                              }
+                                              if (GKernel.instance.maH.text.isEmpty) {
+                                                GKernel.instance.maH.text = '255';
+                                              }
+                                              if (int.parse(GKernel.instance.maH.text) < 14) {
+                                                GKernel.instance.maH.text = '14';
+                                              }
+                                              if (GKernel.instance.liteAuthor.text.isEmpty) {
+                                                GKernel.instance.liteAuthor.text = 'SlopeCraft';
+                                              }
+                                              if (GKernel.instance.liteName.text.isEmpty) {
+                                                GKernel.instance.liteName.text = 'Pixel Paint by SlopeCraft';
+                                              }
+                                              if (GKernel.instance.liteRegionName.text.isEmpty) {
+                                                GKernel.instance.liteRegionName.text = 'Pixel Paint by SlopeCraft';
+                                              }
+                                              var t0 = DateTime.now();
+                                              GKernel.instance.threads = int.parse(GKernel.instance.th.text);
+                                              if (GKernel.instance.multiSingleThread) {
+                                                if (!GKernel.instance.verbose) {
+                                                  GKernel.instance.multiProgress.value = null;
+                                                }
+                                                int total = GKernel.instance.multiRaw.length + GKernel.instance.multiDir.length;
+                                                for (int i = 0; i < GKernel.instance.multiRaw.length; i++) {
+                                                  var r = await tp.Executor().execute(
+                                                      fun1: exportMultiSingle,
+                                                      arg1: ExportMultiArgs(
+                                                          cpuid: -1,
+                                                          convertMethod: GKernel.instance.convertMethod,
+                                                          p: GKernel.instance.multiRaw[i],
+                                                          scl_halfTpPixelSt: GKernel.instance.scl_halfTpPixelSt,
+                                                          scl_pureTpPixelSt: GKernel.instance.scl_pureTpPixelSt,
+                                                          dithering: GKernel.instance.dithering,
+                                                          liteName: GKernel.instance.liteName.text,
+                                                          liteAuthor: GKernel.instance.liteAuthor.text,
+                                                          liteRegionName: GKernel.instance.liteRegionName.text,
+                                                          bI: int.parse(GKernel.instance.maH.text),
+                                                          bridge: GKernel.instance.bridge,
+                                                          compress: GKernel.instance.compress,
+                                                          endermanProof: GKernel.instance.endermanProof,
+                                                          exportType: GKernel.instance.exportType,
+                                                          fireProof: GKernel.instance.fireProof,
+                                                          maH: int.parse(GKernel.instance.maH.text),
+                                                          backgroundColor: GKernel.instance.backgroundColor));
+                                                  if (!r.s) {
+                                                    GKernel.instance.multiFail.add(r.p);
+                                                  }
+
+                                                  if (GKernel.instance.verbose) {
+                                                    GKernel.instance.multiProgress.value = i / total * 100;
+                                                  }
+                                                }
+                                                for (int i = 0; i < GKernel.instance.multiDir.length; i++) {
+                                                  Directory dir = Directory(GKernel.instance.multiDir[i]);
+                                                  Stream<FileSystemEntity> entityList = dir.list(recursive: false, followLinks: false);
+                                                  await for (FileSystemEntity entity in entityList) {
+                                                    if (entity.statSync().type == FileSystemEntityType.file &&
+                                                        ['.png', '.bmp', '.jpeg', '.jpg', '.tga', '.webp', '.tiff'].contains(path.extension(entity.path))) {
+                                                      var r = await tp.Executor().execute(
+                                                          fun1: exportMultiSingle,
+                                                          arg1: ExportMultiArgs(
+                                                              cpuid: -1,
+                                                              convertMethod: GKernel.instance.convertMethod,
+                                                              p: entity.path,
+                                                              scl_halfTpPixelSt: GKernel.instance.scl_halfTpPixelSt,
+                                                              scl_pureTpPixelSt: GKernel.instance.scl_pureTpPixelSt,
+                                                              dithering: GKernel.instance.dithering,
+                                                              liteName: GKernel.instance.liteName.text,
+                                                              liteAuthor: GKernel.instance.liteAuthor.text,
+                                                              liteRegionName: GKernel.instance.liteRegionName.text,
+                                                              bI: int.parse(GKernel.instance.maH.text),
+                                                              bridge: GKernel.instance.bridge,
+                                                              compress: GKernel.instance.compress,
+                                                              endermanProof: GKernel.instance.endermanProof,
+                                                              exportType: GKernel.instance.exportType,
+                                                              fireProof: GKernel.instance.fireProof,
+                                                              maH: int.parse(GKernel.instance.maH.text),
+                                                              backgroundColor: GKernel.instance.backgroundColor));
+                                                      if (!r.s) {
+                                                        GKernel.instance.multiFail.add(r.p);
+                                                      }
+                                                      if (GKernel.instance.verbose) {
+                                                        GKernel.instance.multiProgress.value = i / (total) * 100;
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              } else {
+                                                GKernel.instance.finished = 0;
+
+                                                if (!GKernel.instance.verbose) {
+                                                  GKernel.instance.multiProgress.value = null;
+                                                }
+                                                GKernel.instance.multiProgress.value = 0;
+                                                GKernel.instance.multiDirFiles.clear();
+                                                GKernel.instance.multiFail.clear();
+                                                for (int i = 0; i < GKernel.instance.multiDir.length; i++) {
+                                                  Directory dir = Directory(GKernel.instance.multiDir[i]);
+                                                  Stream<FileSystemEntity> entityList = dir.list(recursive: false, followLinks: false);
+                                                  await for (FileSystemEntity entity in entityList) {
+                                                    if (entity.statSync().type == FileSystemEntityType.file &&
+                                                        ['.png', '.bmp', '.jpeg', '.jpg', '.tga', '.webp', '.tiff'].contains(path.extension(entity.path))) {
+                                                      if (!GKernel.instance.multiDirFiles.contains(entity.path)) {
+                                                        GKernel.instance.multiDirFiles.add(entity.path);
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                                int threads = GKernel.instance.threads;
+                                                List<Future<void>?> t = List.filled(threads, null);
+                                                for (int i = 0; i < threads; i++) {
+                                                  t[i] = export(i, i);
+                                                }
+                                                for (int i = 0; i < threads; i++) {
+                                                  if (t[i] != null) {
+                                                    await t[i];
+                                                  }
+                                                }
+                                              }
+                                              var t1 = DateTime.now();
+                                              showDialog(
+                                                context: context,
+                                                builder: (context) {
+                                                  return ContentDialog(
+                                                    title: const Text('完成'),
+                                                    content: Text('${t1.difference(t0).inMilliseconds}ms'),
+                                                    actions: [
+                                                      Button(
+                                                        child: const Text('确定'),
+                                                        onPressed: () {
+                                                          Navigator.pop(context);
+                                                        },
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                              GKernel.instance.setType(context, true);
+                                              GKernel.instance.building = false;
+                                              GKernel.instance.multiProgress.value = 100.0;
+                                              setState(() {});
+                                            },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      flex: 3,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              Card(
+                child: ValueListenableBuilder(
+                  valueListenable: GKernel.instance.multiProgress,
+                  builder: (context, value, child) {
+                    return RepaintBoundary(
+                      child: Card(
+                        child: ProgressBar(
+                          value: GKernel.instance.multiProgress.value,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     if (GKernel.instance.scl.SCL_queryStep() < step.converted) {
       return ScaffoldPage(
         header: const PageHeader(

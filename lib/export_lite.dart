@@ -50,8 +50,6 @@ class _ExportLitematicaState extends State<ExportLitematica> {
   final _controllerl = ScrollController();
   final _controllerr = ScrollController();
 
-  TextEditingController th = TextEditingController(text: '8');
-
   @override
   Widget build(BuildContext context) {
     Typography typography = FluentTheme.of(context).typography;
@@ -64,10 +62,22 @@ class _ExportLitematicaState extends State<ExportLitematica> {
               SizedBox(
                 width: 100,
                 child: Checkbox(
+                  checked: GKernel.instance.verbose,
+                  content: const Text('进度显示'),
+                  onChanged: (val) {
+                    GKernel.instance.verbose = val!;
+                    setState(() {});
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 180,
+                child: Checkbox(
                   checked: !GKernel.instance.multiSingleThread,
                   content: const Text('启用多线程（实验性）'),
                   onChanged: (val) {
-                    GKernel.instance.multiSingleThread = !val!;
+                    GKernel.instance.multiSingleThread = !(val!);
                     setState(() {});
                   },
                 ),
@@ -76,7 +86,8 @@ class _ExportLitematicaState extends State<ExportLitematica> {
               SizedBox(
                 width: 100,
                 child: TextBox(
-                  controller: th,
+                  controller: GKernel.instance.th,
+                  readOnly: GKernel.instance.multiSingleThread,
                 ),
               ),
             ],
@@ -318,13 +329,11 @@ class _ExportLitematicaState extends State<ExportLitematica> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.stretch,
                                   children: [
-                                    Text('最后一步，将立体地图画导出为投影文件，这很方便生存实装，是不是？', style: typography.body),
+                                    Text('最后一步，将立体地图画导出为投影文件，这很方便生存实装，是不是？', style: typography.bodyLarge),
                                     const SizedBox(height: 5),
-                                    Text('左侧的三个栏是投影文件的一些属性，空着不填也完全没问题。', style: typography.body),
+                                    Text('左侧个栏是投影文件的一些属性，空着不填也完全没问题。', style: typography.bodyLarge),
                                     const SizedBox(height: 5),
-                                    Text('如果您启用了“允许压缩高度”，SlopeCraft会在构建三维结构时尝试依据地图绘制的规律压缩立体地图画的高度，这可以有效避免超过限高（但未必能成功）。', style: typography.body),
-                                    const SizedBox(height: 5),
-                                    Text('下面的两个栏显示了立体地图画的信息，以供参考。', style: typography.body),
+                                    Text('如果您启用了“允许压缩高度”，SlopeCraft会在构建三维结构时尝试依据地图绘制的规律压缩立体地图画的高度，这可以有效避免超过限高（但未必能成功）。', style: typography.bodyLarge),
                                   ],
                                 ),
                               ),
@@ -360,8 +369,12 @@ class _ExportLitematicaState extends State<ExportLitematica> {
                                                 GKernel.instance.liteRegionName.text = 'Pixel Paint by SlopeCraft';
                                               }
                                               var t0 = DateTime.now();
-                                              GKernel.instance.threads = int.parse(th.text);
+                                              GKernel.instance.threads = int.parse(GKernel.instance.th.text);
                                               if (GKernel.instance.multiSingleThread) {
+                                                if (!GKernel.instance.verbose) {
+                                                  GKernel.instance.multiProgress.value = null;
+                                                }
+                                                int total = GKernel.instance.multiRaw.length + GKernel.instance.multiDir.length;
                                                 for (int i = 0; i < GKernel.instance.multiRaw.length; i++) {
                                                   var r = await tp.Executor().execute(
                                                       fun1: exportMultiSingle,
@@ -385,6 +398,9 @@ class _ExportLitematicaState extends State<ExportLitematica> {
                                                           backgroundColor: GKernel.instance.backgroundColor));
                                                   if (!r.s) {
                                                     GKernel.instance.multiFail.add(r.p);
+                                                  }
+                                                  if (GKernel.instance.verbose) {
+                                                    GKernel.instance.multiProgress.value = i / (total) * 100;
                                                   }
                                                 }
                                                 for (int i = 0; i < GKernel.instance.multiDir.length; i++) {
@@ -416,78 +432,35 @@ class _ExportLitematicaState extends State<ExportLitematica> {
                                                       if (!r.s) {
                                                         GKernel.instance.multiFail.add(r.p);
                                                       }
+                                                      if (GKernel.instance.verbose) {
+                                                        GKernel.instance.multiProgress.value = i / (total) * 100;
+                                                      }
                                                     }
                                                   }
                                                 }
                                               } else {
-                                                int threads = GKernel.instance.threads;
-                                                List<tp.Cancelable<ExportMultiReturn>?> t = List.filled(threads, null);
-                                                for (int i = 0; i < GKernel.instance.multiRaw.length; i++) {
-                                                  if (t[i % threads] != null) {
-                                                    var r = await t[i % threads];
-                                                    if (r != null) {
-                                                      if (!r.s) {
-                                                        GKernel.instance.multiFail.add(r.p);
-                                                      }
-                                                    }
-                                                  }
-                                                  t[i % threads] = tp.Executor().execute(
-                                                      fun1: exportMulti,
-                                                      arg1: ExportMultiArgs(
-                                                          cpuid: i % threads,
-                                                          convertMethod: GKernel.instance.convertMethod,
-                                                          p: GKernel.instance.multiRaw[i],
-                                                          scl_halfTpPixelSt: GKernel.instance.scl_halfTpPixelSt,
-                                                          scl_pureTpPixelSt: GKernel.instance.scl_pureTpPixelSt,
-                                                          dithering: GKernel.instance.dithering,
-                                                          liteName: GKernel.instance.liteName.text,
-                                                          liteAuthor: GKernel.instance.liteAuthor.text,
-                                                          liteRegionName: GKernel.instance.liteRegionName.text,
-                                                          bI: int.parse(GKernel.instance.maH.text),
-                                                          bridge: GKernel.instance.bridge,
-                                                          compress: GKernel.instance.compress,
-                                                          endermanProof: GKernel.instance.endermanProof,
-                                                          exportType: GKernel.instance.exportType,
-                                                          fireProof: GKernel.instance.fireProof,
-                                                          maH: int.parse(GKernel.instance.maH.text),
-                                                          backgroundColor: GKernel.instance.backgroundColor));
+                                                GKernel.instance.multiProgress.value = 0;
+                                                if (!GKernel.instance.verbose) {
+                                                  GKernel.instance.multiProgress.value = null;
                                                 }
+                                                GKernel.instance.multiDirFiles.clear();
+                                                GKernel.instance.multiFail.clear();
                                                 for (int i = 0; i < GKernel.instance.multiDir.length; i++) {
                                                   Directory dir = Directory(GKernel.instance.multiDir[i]);
                                                   Stream<FileSystemEntity> entityList = dir.list(recursive: false, followLinks: false);
                                                   await for (FileSystemEntity entity in entityList) {
                                                     if (entity.statSync().type == FileSystemEntityType.file &&
                                                         ['.png', '.bmp', '.jpeg', '.jpg', '.tga', '.webp', '.tiff'].contains(path.extension(entity.path))) {
-                                                      if (t[i % threads] != null) {
-                                                        var r = await t[i % threads];
-                                                        if (r != null) {
-                                                          if (!r.s) {
-                                                            GKernel.instance.multiFail.add(r.p);
-                                                          }
-                                                        }
+                                                      if (!GKernel.instance.multiDirFiles.contains(entity.path)) {
+                                                        GKernel.instance.multiDirFiles.add(entity.path);
                                                       }
-                                                      t[i % 8] = tp.Executor().execute(
-                                                          fun1: exportMulti,
-                                                          arg1: ExportMultiArgs(
-                                                              cpuid: i % threads,
-                                                              convertMethod: GKernel.instance.convertMethod,
-                                                              p: entity.path,
-                                                              scl_halfTpPixelSt: GKernel.instance.scl_halfTpPixelSt,
-                                                              scl_pureTpPixelSt: GKernel.instance.scl_pureTpPixelSt,
-                                                              dithering: GKernel.instance.dithering,
-                                                              liteName: GKernel.instance.liteName.text,
-                                                              liteAuthor: GKernel.instance.liteAuthor.text,
-                                                              liteRegionName: GKernel.instance.liteRegionName.text,
-                                                              bI: int.parse(GKernel.instance.maH.text),
-                                                              bridge: GKernel.instance.bridge,
-                                                              compress: GKernel.instance.compress,
-                                                              endermanProof: GKernel.instance.endermanProof,
-                                                              exportType: GKernel.instance.exportType,
-                                                              fireProof: GKernel.instance.fireProof,
-                                                              maH: int.parse(GKernel.instance.maH.text),
-                                                              backgroundColor: GKernel.instance.backgroundColor));
                                                     }
                                                   }
+                                                }
+                                                int threads = GKernel.instance.threads;
+                                                List<Future<void>?> t = List.filled(threads, null);
+                                                for (int i = 0; i < threads; i++) {
+                                                  t[i] = export(i, i);
                                                 }
                                                 for (int i = 0; i < threads; i++) {
                                                   if (t[i] != null) {
@@ -501,7 +474,7 @@ class _ExportLitematicaState extends State<ExportLitematica> {
                                                 builder: (context) {
                                                   return ContentDialog(
                                                     title: const Text('完成'),
-                                                    content: Text('${t1.difference(t0).inSeconds}s'),
+                                                    content: Text('${t1.difference(t0).inMilliseconds}ms'),
                                                     actions: [
                                                       Button(
                                                         child: const Text('确定'),
@@ -515,7 +488,7 @@ class _ExportLitematicaState extends State<ExportLitematica> {
                                               );
                                               GKernel.instance.setType(context, true);
                                               GKernel.instance.building = false;
-                                              GKernel.instance.multiProgress = 100.0;
+                                              GKernel.instance.multiProgress.value = 100.0;
                                               setState(() {});
                                             },
                                     ),
@@ -533,10 +506,17 @@ class _ExportLitematicaState extends State<ExportLitematica> {
               ),
               const SizedBox(height: 10),
               Card(
-                child: RepaintBoundary(
-                  child: ProgressBar(
-                    value: GKernel.instance.multiProgress,
-                  ),
+                child: ValueListenableBuilder(
+                  valueListenable: GKernel.instance.multiProgress,
+                  builder: (context, value, child) {
+                    return RepaintBoundary(
+                      child: Card(
+                        child: ProgressBar(
+                          value: GKernel.instance.multiProgress.value,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ],

@@ -1,10 +1,13 @@
 import 'dart:ffi';
 import 'dart:io';
 
+import 'package:enough_convert/enough_convert.dart';
 import 'package:ffi/ffi.dart' as ffi;
 import 'package:file_picker/file_picker.dart' as file_picker;
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/services.dart';
+import 'package:path/path.dart' as path;
+import 'package:worker_manager/worker_manager.dart' as tp;
 
 import 'kernel.dart';
 import 'scl_interface.dart';
@@ -24,6 +27,239 @@ class _ExportMapState extends State<ExportMap> {
   @override
   Widget build(BuildContext context) {
     Typography typography = FluentTheme.of(context).typography;
+    if (GKernel.instance.mapIndex.text.isEmpty) {
+      GKernel.instance.mapIndex.text = '0';
+    }
+    int indexStart = int.parse(GKernel.instance.mapIndex.text);
+    int mapRows = (GKernel.instance.scl.SCL_getImageRows() / 128).ceil();
+    int mapCols = (GKernel.instance.scl.SCL_getImageCols() / 128).ceil();
+    _showDataRows.text = mapRows.toString();
+    _showDataCols.text = mapCols.toString();
+    _showDataCounts.text = (mapRows * mapCols).toString();
+    _showDataFileName.text = 'map_$indexStart.dat~map_${indexStart + mapRows * mapCols - 1}.dat';
+    if (GKernel.instance.multiMode) {
+      return ScaffoldPage(
+        header: PageHeader(
+          title: const Text('导出地图文件-批量模式'),
+          commandBar: Row(
+            children: [
+              SizedBox(
+                width: 100,
+                child: Checkbox(
+                  checked: GKernel.instance.verbose,
+                  content: const Text('进度显示'),
+                  onChanged: (val) {
+                    GKernel.instance.verbose = val!;
+                    setState(() {});
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 200,
+                child: Checkbox(
+                  checked: !GKernel.instance.multiSingleThread,
+                  content: const Text('启用多线程（实验性）'),
+                  onChanged: (val) {
+                    GKernel.instance.multiSingleThread = !(val!);
+                    setState(() {});
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 100,
+                child: TextBox(
+                  controller: GKernel.instance.th,
+                  readOnly: GKernel.instance.multiSingleThread,
+                ),
+              ),
+            ],
+          ),
+        ),
+        content: Padding(
+          padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Card(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text('地图文件的文件名形如map_3.dat，是minecraft用于存储地图内容的文件。其中3表示地图文件的序号,地图的序号从0开始。', style: typography.bodyLarge),
+                      Text('地图文件存储于存档中的data文件夹下，你需要一定的权限才能修改它们。如果你既不是单机游戏，又不是服主，那你应该选择导出为投影，而不是地图文件。', style: typography.bodyLarge),
+                      Text('每张地图只能显示128×128的画面，大图片可能会有多个地图，对应多个地图文件。它们会占用连续的一段序号。', style: typography.bodyLarge),
+                      Text('例如，你可以使用/give @s filled_map{map:3}来获得map_3.dat的地图。', style: typography.bodyLarge),
+                      Text('1.12版请使用/give @p filled_map 1 3', style: typography.bodyLarge),
+                      Text('这种方法适合以最高画质展示大图片，但不适合服务器。', style: typography.bodyLarge),
+                      const SizedBox(height: 5),
+                      Text('文件将会导出到图片所在路径与文件同名的文件夹下。', style: typography.bodyLarge),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: ValueListenableBuilder(
+                      valueListenable: GKernel.instance.multiProgress,
+                      builder: (context, value, child) {
+                        return RepaintBoundary(
+                          child: Card(
+                            child: ProgressBar(
+                              value: GKernel.instance.multiProgress.value,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  SizedBox(
+                    width: 200,
+                    child: RepaintBoundary(
+                      child: FilledButton(
+                          child: const Text('导出！'),
+                          onPressed: GKernel.instance.building
+                              ? null
+                              : () async {
+                                  GKernel.instance.building = true;
+                                  setState(() {});
+                                  var t0 = DateTime.now();
+                                  GKernel.instance.threads = int.parse(GKernel.instance.th.text);
+                                  if (GKernel.instance.multiSingleThread) {
+                                    if (!GKernel.instance.verbose) {
+                                      GKernel.instance.multiProgress.value = null;
+                                    }
+                                    int total = GKernel.instance.multiRaw.length + GKernel.instance.multiDir.length;
+                                    for (int i = 0; i < GKernel.instance.multiRaw.length; i++) {
+                                      var r = await tp.Executor().execute(
+                                          fun1: exportMultiSingle,
+                                          arg1: ExportMultiArgs(
+                                              cpuid: -1,
+                                              convertMethod: GKernel.instance.convertMethod,
+                                              p: GKernel.instance.multiRaw[i],
+                                              scl_halfTpPixelSt: GKernel.instance.scl_halfTpPixelSt,
+                                              scl_pureTpPixelSt: GKernel.instance.scl_pureTpPixelSt,
+                                              dithering: GKernel.instance.dithering,
+                                              liteName: GKernel.instance.liteName.text,
+                                              liteAuthor: GKernel.instance.liteAuthor.text,
+                                              liteRegionName: GKernel.instance.liteRegionName.text,
+                                              bI: int.parse(GKernel.instance.maH.text),
+                                              bridge: GKernel.instance.bridge,
+                                              compress: GKernel.instance.compress,
+                                              endermanProof: GKernel.instance.endermanProof,
+                                              exportType: GKernel.instance.exportType,
+                                              fireProof: GKernel.instance.fireProof,
+                                              maH: int.parse(GKernel.instance.maH.text),
+                                              backgroundColor: GKernel.instance.backgroundColor));
+                                      if (!r.s) {
+                                        GKernel.instance.multiFail.add(r.p);
+                                      }
+                                      if (GKernel.instance.verbose) {
+                                        GKernel.instance.multiProgress.value = i / (total) * 100;
+                                      }
+                                    }
+                                    for (int i = 0; i < GKernel.instance.multiDir.length; i++) {
+                                      Directory dir = Directory(GKernel.instance.multiDir[i]);
+                                      Stream<FileSystemEntity> entityList = dir.list(recursive: false, followLinks: false);
+                                      await for (FileSystemEntity entity in entityList) {
+                                        if (entity.statSync().type == FileSystemEntityType.file &&
+                                            ['.png', '.bmp', '.jpeg', '.jpg', '.tga', '.webp', '.tiff'].contains(path.extension(entity.path))) {
+                                          var r = await tp.Executor().execute(
+                                              fun1: exportMultiSingle,
+                                              arg1: ExportMultiArgs(
+                                                  cpuid: -1,
+                                                  convertMethod: GKernel.instance.convertMethod,
+                                                  p: entity.path,
+                                                  scl_halfTpPixelSt: GKernel.instance.scl_halfTpPixelSt,
+                                                  scl_pureTpPixelSt: GKernel.instance.scl_pureTpPixelSt,
+                                                  dithering: GKernel.instance.dithering,
+                                                  liteName: GKernel.instance.liteName.text,
+                                                  liteAuthor: GKernel.instance.liteAuthor.text,
+                                                  liteRegionName: GKernel.instance.liteRegionName.text,
+                                                  bI: int.parse(GKernel.instance.maH.text),
+                                                  bridge: GKernel.instance.bridge,
+                                                  compress: GKernel.instance.compress,
+                                                  endermanProof: GKernel.instance.endermanProof,
+                                                  exportType: GKernel.instance.exportType,
+                                                  fireProof: GKernel.instance.fireProof,
+                                                  maH: int.parse(GKernel.instance.maH.text),
+                                                  backgroundColor: GKernel.instance.backgroundColor));
+                                          if (!r.s) {
+                                            GKernel.instance.multiFail.add(r.p);
+                                          }
+                                          if (GKernel.instance.verbose) {
+                                            GKernel.instance.multiProgress.value = i / (total) * 100;
+                                          }
+                                        }
+                                      }
+                                    }
+                                  } else {
+                                    GKernel.instance.finished = 0;
+                                    if (!GKernel.instance.verbose) {
+                                      GKernel.instance.multiProgress.value = null;
+                                    }
+                                    GKernel.instance.multiProgress.value = 0;
+                                    GKernel.instance.multiDirFiles.clear();
+                                    GKernel.instance.multiFail.clear();
+                                    for (int i = 0; i < GKernel.instance.multiDir.length; i++) {
+                                      Directory dir = Directory(GKernel.instance.multiDir[i]);
+                                      Stream<FileSystemEntity> entityList = dir.list(recursive: false, followLinks: false);
+                                      await for (FileSystemEntity entity in entityList) {
+                                        if (entity.statSync().type == FileSystemEntityType.file &&
+                                            ['.png', '.bmp', '.jpeg', '.jpg', '.tga', '.webp', '.tiff'].contains(path.extension(entity.path))) {
+                                          if (!GKernel.instance.multiDirFiles.contains(entity.path)) {
+                                            GKernel.instance.multiDirFiles.add(entity.path);
+                                          }
+                                        }
+                                      }
+                                    }
+                                    int threads = GKernel.instance.threads;
+                                    List<Future<void>?> t = List.filled(threads, null);
+                                    for (int i = 0; i < threads; i++) {
+                                      t[i] = export(i, i);
+                                    }
+                                    for (int i = 0; i < threads; i++) {
+                                      if (t[i] != null) {
+                                        await t[i];
+                                      }
+                                    }
+                                  }
+                                  var t1 = DateTime.now();
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return ContentDialog(
+                                        title: const Text('完成'),
+                                        content: Text('${t1.difference(t0).inMilliseconds}ms'),
+                                        actions: [
+                                          Button(
+                                            child: const Text('确定'),
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            },
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                  GKernel.instance.setType(context, true);
+                                  GKernel.instance.building = false;
+                                  GKernel.instance.multiProgress.value = 100.0;
+                                  setState(() {});
+                                }),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     if (GKernel.instance.scl.SCL_queryStep() < step.converted) {
       return ScaffoldPage(
         header: const PageHeader(
@@ -41,16 +277,6 @@ class _ExportMapState extends State<ExportMap> {
         ),
       );
     }
-    if (GKernel.instance.mapIndex.text.isEmpty) {
-      GKernel.instance.mapIndex.text = '0';
-    }
-    int indexStart = int.parse(GKernel.instance.mapIndex.text);
-    int mapRows = (GKernel.instance.scl.SCL_getImageRows() / 128).ceil();
-    int mapCols = (GKernel.instance.scl.SCL_getImageCols() / 128).ceil();
-    _showDataRows.text = mapRows.toString();
-    _showDataCols.text = mapCols.toString();
-    _showDataCounts.text = (mapRows * mapCols).toString();
-    _showDataFileName.text = 'map_$indexStart.dat~map_${indexStart + mapRows * mapCols - 1}.dat';
     return ScaffoldPage(
       header: const PageHeader(
         title: Text('导出地图文件'),
@@ -243,8 +469,17 @@ class _ExportMapState extends State<ExportMap> {
                               }
                             }
                           }
+                          final gbk = const GbkCodec().encode(path.dirname(outputFile));
 
-                          GKernel.instance.scl.SCL_exportAsData('.'.toNativeUtf8().cast(), int.parse(GKernel.instance.mapIndex.text), nullptr, nullptr);
+                          Pointer<Int8> pg = ffi.calloc.call(gbk.length + 1);
+                          for (int i = 0; i < gbk.length; i++) {
+                            pg.elementAt(i).value = gbk[i];
+                          }
+                          pg.elementAt(gbk.length).value = 0;
+
+                          GKernel.instance.scl.SCL_exportAsData(pg, int.parse(GKernel.instance.mapIndex.text), nullptr, nullptr);
+
+                          ffi.calloc.free(pg);
                           showDialog(
                             builder: (context) {
                               return ContentDialog(
@@ -254,10 +489,11 @@ class _ExportMapState extends State<ExportMap> {
                                   SizedBox(
                                     width: 150,
                                     child: FilledButton(
-                                        child: const Text('确定'),
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        }),
+                                      child: const Text('确定'),
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                    ),
                                   ),
                                 ],
                               );

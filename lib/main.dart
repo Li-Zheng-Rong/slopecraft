@@ -21,7 +21,6 @@ import 'export.dart';
 import 'import_picture.dart';
 import 'kernel.dart';
 import 'set_block_list.dart';
-import 'settings.dart';
 import 'start.dart';
 import 'theme.dart';
 
@@ -42,6 +41,19 @@ bool get isDesktop {
 const ID_TEXT = 200;
 const ID_EDITTEXT = 201;
 const ID_PROGRESS = 202;
+bool isWindowsVersionOrGreater(int dwMajor, int dwMinor, int dwBuild) {
+  Pointer<OSVERSIONINFOEX> osvi = ffi.malloc.call();
+  osvi.ref.dwOSVersionInfoSize = sizeOf<OSVERSIONINFOEX>();
+  osvi.ref.dwMajorVersion = dwMajor;
+  osvi.ref.dwMinorVersion = dwMinor;
+  osvi.ref.dwBuildNumber = dwBuild;
+  int dwlConditionMask = 0;
+  var op = VER_GREATER_EQUAL;
+  dwlConditionMask = VerSetConditionMask(dwlConditionMask, VER_MAJORVERSION, op);
+  dwlConditionMask = VerSetConditionMask(dwlConditionMask, VER_MINORVERSION, op);
+  dwlConditionMask = VerSetConditionMask(dwlConditionMask, VER_BUILDNUMBER, op);
+  return (VerifyVersionInfo(osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER, dwlConditionMask) != FALSE);
+}
 
 final hInstance = GetModuleHandle(nullptr);
 String textEntered = '';
@@ -70,7 +82,22 @@ void main(List<String> args) async {
   if (isDesktop) {
     await windowManager.ensureInitialized();
     await flutter_acrylic.Window.initialize();
-    await flutter_acrylic.Window.setEffect(effect: flutter_acrylic.WindowEffect.acrylic, dark: await SystemTheme.darkMode);
+
+    if (isWindowsVersionOrGreater(10, 0, 22000)) {
+      GKernel.instance.osversion = OSVersion.win11;
+    } else if (IsWindows10OrGreater() == 1) {
+      GKernel.instance.osversion = OSVersion.win10;
+    } else {
+      GKernel.instance.osversion = OSVersion.win7;
+    }
+    if (GKernel.instance.osversion == OSVersion.win11) {
+      await flutter_acrylic.Window.setEffect(effect: flutter_acrylic.WindowEffect.acrylic, dark: await SystemTheme.darkMode);
+    } else if (GKernel.instance.osversion == OSVersion.win10) {
+      await flutter_acrylic.Window.setEffect(effect: flutter_acrylic.WindowEffect.disabled, dark: await SystemTheme.darkMode);
+    } else {
+      await flutter_acrylic.Window.setEffect(effect: flutter_acrylic.WindowEffect.aero, dark: await SystemTheme.darkMode);
+    }
+
     windowManager.waitUntilReadyToShow().then((_) async {
       // await windowManager.setTitleBarStyle(TitleBarStyle.hidden, windowButtonVisibility: false);
       await windowManager.setSize(const Size(1000, 610));
@@ -292,10 +319,6 @@ class _MyHomePageState extends State<MyHomePage> {
             footerItems: [
               PaneItemSeparator(),
               PaneItem(
-                icon: const Icon(FluentIcons.settings),
-                title: const Text('设置'),
-              ),
-              PaneItem(
                 icon: const Icon(FluentIcons.info),
                 title: const Text('关于'),
               ),
@@ -313,7 +336,6 @@ class _MyHomePageState extends State<MyHomePage> {
               ConvertMap(),
               Export(),
               CutTool(),
-              Settings(),
               About(),
             ],
           ),

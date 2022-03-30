@@ -8,6 +8,8 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:image/image.dart' as img;
 import 'package:logger/logger.dart';
 import 'package:path/path.dart' as path;
+import 'package:win32/win32.dart';
+import 'package:worker_manager/worker_manager.dart' as tp;
 
 import 'block.dart';
 import 'blockmanager.dart';
@@ -404,6 +406,7 @@ List<String> baseColorNames = [
   ''
 ];
 enum ExportType { file, litematica, structure }
+enum OSVersion { win11, win10, win7, unknown }
 
 class Item {
   Item({required this.count, required this.name, required this.image, required this.countb});
@@ -431,6 +434,9 @@ class GKernel {
   int mapType = 0;
   String gameVersion = '1.18';
   bool multiSingleThread = false;
+  bool verbose = true;
+  int finished = 0;
+  OSVersion osversion = OSVersion.unknown;
   SlopeCraftL scl = SlopeCraftL(DynamicLibrary.open('slopecraft.dll'));
   List<SlopeCraftL> sclcpu = [
     SlopeCraftL(DynamicLibrary.open('slopecraft cpu0.dll')),
@@ -455,7 +461,7 @@ class GKernel {
   bool dithering = false;
   String convertMethod = 'RGB+';
   int? height, width;
-  double multiProgress = 0.0;
+  ValueNotifier<double?> multiProgress = ValueNotifier<double?>(0.0);
   Image? convertedImage = Image.file(
     File(path.join(dataPrefix, 'transparent.png')),
     cacheHeight: 1,
@@ -468,6 +474,7 @@ class GKernel {
   );
   Image? show;
   bool building = false;
+  TextEditingController th = TextEditingController(text: '8');
   int compress = compressSettings.Both;
   TextEditingController maH = TextEditingController(text: '255');
   int bridge = glassBridgeSettings.noBridge;
@@ -481,6 +488,7 @@ class GKernel {
   TextEditingController mapIndex = TextEditingController(text: '0');
   TextEditingController multiExportFile = TextEditingController(text: '\${PICTURE_PARENT_PATH}/\${PICTURE_BASENAME}');
   List<String> multiFail = [];
+  List<String> multiDirFiles = [];
   int dx = 0;
   int dy = 0;
   int dz = 0;
@@ -1034,7 +1042,7 @@ ExportMultiReturn exportMulti(ExportMultiArgs args) {
   int imgHeightC = 0;
   int imgWidthC = 0;
   //import picture
-  if (File(args.p).existsSync() == false) {
+  if (args.exportType != ExportType.file && File(args.p).existsSync() == false) {
     return ExportMultiReturn(s: false, p: args.p);
   }
 
@@ -1108,13 +1116,14 @@ ExportMultiReturn exportMulti(ExportMultiArgs args) {
   }
   if (args.exportType == ExportType.litematica || args.exportType == ExportType.structure) {
     GKernel.instance.sclcpu[args.cpuid].SCL_build(args.compress, args.maH, args.bridge, args.bI, args.fireProof, args.endermanProof);
+
+    if (GKernel.instance.sclcpu[args.cpuid].SCL_queryStep() < step.builded) {
+      return ExportMultiReturn(s: false, p: args.p);
+    }
   }
 
-  if (GKernel.instance.sclcpu[args.cpuid].SCL_queryStep() < step.builded) {
-    return ExportMultiReturn(s: false, p: args.p);
-  }
   if (args.exportType == ExportType.litematica) {
-    String? outputFile = path.setExtension(args.p, '.litematic');
+    String outputFile = path.setExtension(args.p, '.litematic');
     final gbk = const GbkCodec(allowInvalid: false).encode(outputFile);
 
     Pointer<Int8> pg = ffi.calloc.call(gbk.length + 1);
@@ -1124,6 +1133,36 @@ ExportMultiReturn exportMulti(ExportMultiArgs args) {
     pg.elementAt(gbk.length).value = 0;
     GKernel.instance.sclcpu[args.cpuid].SCL_exportAsLitematic(
         pg, args.liteName.toNativeUtf8().cast(), args.liteAuthor.toNativeUtf8().cast(), args.liteRegionName.toNativeUtf8().cast(), nullptr);
+    return ExportMultiReturn(s: true, p: args.p);
+  } else if (args.exportType == ExportType.structure) {
+    String outputFile = path.setExtension(args.p, '.nbt');
+    final gbk = const GbkCodec(allowInvalid: false).encode(outputFile);
+
+    Pointer<Int8> pg = ffi.calloc.call(gbk.length + 1);
+    for (int i = 0; i < gbk.length; i++) {
+      pg.elementAt(i).value = gbk[i];
+    }
+    pg.elementAt(gbk.length).value = 0;
+    GKernel.instance.sclcpu[args.cpuid].SCL_exportAsStructure(pg, nullptr);
+    return ExportMultiReturn(s: true, p: args.p);
+  } else if (args.exportType == ExportType.file) {
+    String outputFile = path.withoutExtension(args.p);
+    var dir = Directory(outputFile);
+    if (!dir.existsSync()) {
+      dir.createSync();
+    } else if (dir.statSync().type != FileSystemEntityType.directory) {
+      return ExportMultiReturn(s: false, p: args.p);
+    }
+    final gbk = const GbkCodec(allowInvalid: false).encode(outputFile);
+
+    Pointer<Int8> pg = ffi.calloc.call(gbk.length + 1);
+    for (int i = 0; i < gbk.length; i++) {
+      pg.elementAt(i).value = gbk[i];
+    }
+    pg.elementAt(gbk.length).value = 0;
+
+    GKernel.instance.sclcpu[args.cpuid].SCL_exportAsData(pg, 0, nullptr, nullptr);
+
     return ExportMultiReturn(s: true, p: args.p);
   }
   return ExportMultiReturn(s: false, p: args.p);
@@ -1208,13 +1247,13 @@ ExportMultiReturn exportMultiSingle(ExportMultiArgs args) {
   }
   if (args.exportType == ExportType.litematica || args.exportType == ExportType.structure) {
     GKernel.instance.scl.SCL_build(args.compress, args.maH, args.bridge, args.bI, args.fireProof, args.endermanProof);
-  }
 
-  if (GKernel.instance.scl.SCL_queryStep() < step.builded) {
-    return ExportMultiReturn(s: false, p: args.p);
+    if (GKernel.instance.scl.SCL_queryStep() < step.builded) {
+      return ExportMultiReturn(s: false, p: args.p);
+    }
   }
   if (args.exportType == ExportType.litematica) {
-    String? outputFile = path.setExtension(args.p, '.litematic');
+    String outputFile = path.setExtension(args.p, '.litematic');
     final gbk = const GbkCodec(allowInvalid: false).encode(outputFile);
 
     Pointer<Int8> pg = ffi.calloc.call(gbk.length + 1);
@@ -1225,6 +1264,75 @@ ExportMultiReturn exportMultiSingle(ExportMultiArgs args) {
     GKernel.instance.scl.SCL_exportAsLitematic(
         pg, args.liteName.toNativeUtf8().cast(), args.liteAuthor.toNativeUtf8().cast(), args.liteRegionName.toNativeUtf8().cast(), nullptr);
     return ExportMultiReturn(s: true, p: args.p);
+  } else if (args.exportType == ExportType.structure) {
+    String outputFile = path.setExtension(args.p, '.nbt');
+    final gbk = const GbkCodec(allowInvalid: false).encode(outputFile);
+
+    Pointer<Int8> pg = ffi.calloc.call(gbk.length + 1);
+    for (int i = 0; i < gbk.length; i++) {
+      pg.elementAt(i).value = gbk[i];
+    }
+    pg.elementAt(gbk.length).value = 0;
+    GKernel.instance.scl.SCL_exportAsStructure(pg, nullptr);
+    return ExportMultiReturn(s: true, p: args.p);
+  } else if (args.exportType == ExportType.file) {
+    String outputFile = path.withoutExtension(args.p);
+    var dir = Directory(outputFile);
+    if (!dir.existsSync()) {
+      dir.createSync();
+    } else if (dir.statSync().type != FileSystemEntityType.directory) {
+      return ExportMultiReturn(s: false, p: args.p);
+    }
+    final gbk = const GbkCodec(allowInvalid: false).encode(outputFile);
+
+    Pointer<Int8> pg = ffi.calloc.call(gbk.length + 1);
+    for (int i = 0; i < gbk.length; i++) {
+      pg.elementAt(i).value = gbk[i];
+    }
+    pg.elementAt(gbk.length).value = 0;
+
+    GKernel.instance.scl.SCL_exportAsData(pg, 0, nullptr, nullptr);
+
+    return ExportMultiReturn(s: true, p: args.p);
   }
   return ExportMultiReturn(s: false, p: args.p);
+}
+
+Future<void> export(int i, int cpuid) async {
+  int total = GKernel.instance.multiRaw.length + GKernel.instance.multiDirFiles.length;
+  if (i >= total) {
+    return;
+  }
+  var value = await tp.Executor().execute(
+    fun1: exportMulti,
+    arg1: ExportMultiArgs(
+        cpuid: cpuid,
+        convertMethod: GKernel.instance.convertMethod,
+        p: i >= GKernel.instance.multiDirFiles.length
+            ? GKernel.instance.multiRaw[i - GKernel.instance.multiDirFiles.length]
+            : GKernel.instance.multiDirFiles[i],
+        scl_halfTpPixelSt: GKernel.instance.scl_halfTpPixelSt,
+        scl_pureTpPixelSt: GKernel.instance.scl_pureTpPixelSt,
+        dithering: GKernel.instance.dithering,
+        liteName: GKernel.instance.liteName.text,
+        liteAuthor: GKernel.instance.liteAuthor.text,
+        liteRegionName: GKernel.instance.liteRegionName.text,
+        bI: int.parse(GKernel.instance.maH.text),
+        bridge: GKernel.instance.bridge,
+        compress: GKernel.instance.compress,
+        endermanProof: GKernel.instance.endermanProof,
+        exportType: GKernel.instance.exportType,
+        fireProof: GKernel.instance.fireProof,
+        maH: int.parse(GKernel.instance.maH.text),
+        backgroundColor: GKernel.instance.backgroundColor),
+  );
+  if (!value.s) {
+    GKernel.instance.multiFail.add(value.p);
+  }
+  if (GKernel.instance.verbose) {
+    GKernel.instance.finished++;
+    GKernel.instance.multiProgress.value = GKernel.instance.finished / total * 100;
+  }
+
+  await export(i + GKernel.instance.threads, cpuid);
 }
