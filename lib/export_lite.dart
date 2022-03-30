@@ -116,19 +116,27 @@ class _ExportLitematicaState extends State<ExportLitematica> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              TextBox(
-                                header: '投影作者',
-                                placeholder: 'SlopeCraft',
-                                controller: GKernel.instance.liteAuthor,
-                                readOnly: GKernel.instance.building,
-                              ),
+                              ValueListenableBuilder(
+                                  valueListenable: GKernel.instance.building,
+                                  builder: (context, value, child) {
+                                    return TextBox(
+                                      header: '投影作者',
+                                      placeholder: 'SlopeCraft',
+                                      controller: GKernel.instance.liteAuthor,
+                                      readOnly: GKernel.instance.building.value,
+                                    );
+                                  }),
                               const SizedBox(height: 8),
-                              TextBox(
-                                header: '投影区域名称',
-                                placeholder: 'Pixel Paint by SlopeCraft',
-                                controller: GKernel.instance.liteRegionName,
-                                readOnly: GKernel.instance.building,
-                              ),
+                              ValueListenableBuilder(
+                                  valueListenable: GKernel.instance.building,
+                                  builder: (context, value, child) {
+                                    return TextBox(
+                                      header: '投影区域名称',
+                                      placeholder: 'Pixel Paint by SlopeCraft',
+                                      controller: GKernel.instance.liteRegionName,
+                                      readOnly: GKernel.instance.building.value,
+                                    );
+                                  }),
                               const SizedBox(height: 8),
                               const Divider(),
                               const SizedBox(height: 8),
@@ -143,50 +151,58 @@ class _ExportLitematicaState extends State<ExportLitematica> {
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.stretch,
                                           children: [
-                                            Checkbox(
-                                              checked: GKernel.instance.compress == compressSettings.Both ||
-                                                  GKernel.instance.compress == compressSettings.NaturalOnly,
-                                              onChanged: GKernel.instance.building
-                                                  ? null
-                                                  : (value) => setState(() {
-                                                        if (value == true) {
-                                                          if (GKernel.instance.compress == compressSettings.noCompress) {
-                                                            GKernel.instance.compress = compressSettings.NaturalOnly;
-                                                          } else {
-                                                            GKernel.instance.compress = compressSettings.Both;
-                                                          }
-                                                        } else {
-                                                          if (GKernel.instance.compress == compressSettings.Both) {
-                                                            GKernel.instance.compress = compressSettings.ForcedOnly;
-                                                          } else {
-                                                            GKernel.instance.compress = compressSettings.noCompress;
-                                                          }
-                                                        }
-                                                      }),
-                                              content: const Text('无损压缩'),
-                                            ),
-                                            Checkbox(
-                                              checked: GKernel.instance.compress == compressSettings.Both ||
-                                                  GKernel.instance.compress == compressSettings.ForcedOnly,
-                                              onChanged: GKernel.instance.building
-                                                  ? null
-                                                  : (value) => setState(() {
-                                                        if (value == true) {
-                                                          if (GKernel.instance.compress == compressSettings.noCompress) {
-                                                            GKernel.instance.compress = compressSettings.ForcedOnly;
-                                                          } else {
-                                                            GKernel.instance.compress = compressSettings.Both;
-                                                          }
-                                                        } else {
-                                                          if (GKernel.instance.compress == compressSettings.Both) {
-                                                            GKernel.instance.compress = compressSettings.NaturalOnly;
-                                                          } else {
-                                                            GKernel.instance.compress = compressSettings.noCompress;
-                                                          }
-                                                        }
-                                                      }),
-                                              content: const Text('智能有损压缩'),
-                                            ),
+                                            ValueListenableBuilder(
+                                                valueListenable: GKernel.instance.building,
+                                                builder: (context, value, child) {
+                                                  return Checkbox(
+                                                    checked: GKernel.instance.compress == compressSettings.Both ||
+                                                        GKernel.instance.compress == compressSettings.NaturalOnly,
+                                                    onChanged: GKernel.instance.building.value
+                                                        ? null
+                                                        : (value) => setState(() {
+                                                              if (value == true) {
+                                                                if (GKernel.instance.compress == compressSettings.noCompress) {
+                                                                  GKernel.instance.compress = compressSettings.NaturalOnly;
+                                                                } else {
+                                                                  GKernel.instance.compress = compressSettings.Both;
+                                                                }
+                                                              } else {
+                                                                if (GKernel.instance.compress == compressSettings.Both) {
+                                                                  GKernel.instance.compress = compressSettings.ForcedOnly;
+                                                                } else {
+                                                                  GKernel.instance.compress = compressSettings.noCompress;
+                                                                }
+                                                              }
+                                                            }),
+                                                    content: const Text('无损压缩'),
+                                                  );
+                                                }),
+                                            ValueListenableBuilder(
+                                                valueListenable: GKernel.instance.building,
+                                                builder: (context, value, child) {
+                                                  return Checkbox(
+                                                    checked: GKernel.instance.compress == compressSettings.Both ||
+                                                        GKernel.instance.compress == compressSettings.ForcedOnly,
+                                                    onChanged: GKernel.instance.building.value
+                                                        ? null
+                                                        : (value) => setState(() {
+                                                              if (value == true) {
+                                                                if (GKernel.instance.compress == compressSettings.noCompress) {
+                                                                  GKernel.instance.compress = compressSettings.ForcedOnly;
+                                                                } else {
+                                                                  GKernel.instance.compress = compressSettings.Both;
+                                                                }
+                                                              } else {
+                                                                if (GKernel.instance.compress == compressSettings.Both) {
+                                                                  GKernel.instance.compress = compressSettings.NaturalOnly;
+                                                                } else {
+                                                                  GKernel.instance.compress = compressSettings.noCompress;
+                                                                }
+                                                              }
+                                                            }),
+                                                    content: const Text('智能有损压缩'),
+                                                  );
+                                                }),
                                             const SizedBox(height: 8),
                                             Row(
                                               children: [
@@ -199,7 +215,7 @@ class _ExportLitematicaState extends State<ExportLitematica> {
                                                     keyboardType: TextInputType.number,
                                                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                                     maxLength: 4,
-                                                    readOnly: GKernel.instance.building,
+                                                    readOnly: GKernel.instance.building.value,
                                                   ),
                                                 ),
                                               ],
@@ -233,7 +249,7 @@ class _ExportLitematicaState extends State<ExportLitematica> {
                                           children: [
                                             Checkbox(
                                               checked: GKernel.instance.bridge == glassBridgeSettings.withBridge,
-                                              onChanged: GKernel.instance.building
+                                              onChanged: GKernel.instance.building.value
                                                   ? null
                                                   : (value) => setState(() {
                                                         if (value == true) {
@@ -251,13 +267,12 @@ class _ExportLitematicaState extends State<ExportLitematica> {
                                                 const SizedBox(width: 8),
                                                 Expanded(
                                                   child: TextBox(
-                                                    placeholder: '4',
-                                                    controller: GKernel.instance.bI,
-                                                    keyboardType: TextInputType.number,
-                                                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                                    maxLength: 4,
-                                                    readOnly: GKernel.instance.building,
-                                                  ),
+                                                      placeholder: '4',
+                                                      controller: GKernel.instance.bI,
+                                                      keyboardType: TextInputType.number,
+                                                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                                      maxLength: 4,
+                                                      readOnly: GKernel.instance.building.value),
                                                 ),
                                               ],
                                             )
@@ -290,12 +305,14 @@ class _ExportLitematicaState extends State<ExportLitematica> {
                                           children: [
                                             Checkbox(
                                               checked: GKernel.instance.fireProof,
-                                              onChanged: GKernel.instance.building ? null : (value) => setState(() => GKernel.instance.fireProof = value!),
+                                              onChanged:
+                                                  GKernel.instance.building.value ? null : (value) => setState(() => GKernel.instance.fireProof = value!),
                                               content: const Text('防火'),
                                             ),
                                             Checkbox(
                                               checked: GKernel.instance.endermanProof,
-                                              onChanged: GKernel.instance.building ? null : (value) => setState(() => GKernel.instance.endermanProof = value!),
+                                              onChanged:
+                                                  GKernel.instance.building.value ? null : (value) => setState(() => GKernel.instance.endermanProof = value!),
                                               content: const Text('防末影人'),
                                             ),
                                           ],
@@ -343,187 +360,194 @@ class _ExportLitematicaState extends State<ExportLitematica> {
                               child: Row(
                                 children: [
                                   Expanded(
-                                    child: FilledButton(
-                                      child: const Text('导出'),
-                                      onPressed: GKernel.instance.building
-                                          ? null
-                                          : () async {
-                                              GKernel.instance.building = true;
-                                              setState(() {});
-                                              if (GKernel.instance.bI.text.isEmpty) {
-                                                GKernel.instance.bI.text = '4';
-                                              }
-                                              if (GKernel.instance.maH.text.isEmpty) {
-                                                GKernel.instance.maH.text = '255';
-                                              }
-                                              if (int.parse(GKernel.instance.maH.text) < 14) {
-                                                GKernel.instance.maH.text = '14';
-                                              }
-                                              if (GKernel.instance.liteAuthor.text.isEmpty) {
-                                                GKernel.instance.liteAuthor.text = 'SlopeCraft';
-                                              }
-                                              if (GKernel.instance.liteName.text.isEmpty) {
-                                                GKernel.instance.liteName.text = 'Pixel Paint by SlopeCraft';
-                                              }
-                                              if (GKernel.instance.liteRegionName.text.isEmpty) {
-                                                GKernel.instance.liteRegionName.text = 'Pixel Paint by SlopeCraft';
-                                              }
-                                              // var t0 = DateTime.now();
-                                              GKernel.instance.threads = int.parse(GKernel.instance.th.text);
-                                              if (GKernel.instance.multiSingleThread) {
-                                                if (!GKernel.instance.verbose) {
-                                                  GKernel.instance.multiProgress.value = null;
-                                                }
-                                                int total = GKernel.instance.multiRaw.length + GKernel.instance.multiDir.length;
-                                                for (int i = 0; i < GKernel.instance.multiRaw.length; i++) {
-                                                  var r = await tp.Executor().execute(
-                                                      fun1: exportMultiSingle,
-                                                      arg1: ExportMultiArgs(
-                                                          cpuid: -1,
-                                                          convertMethod: GKernel.instance.convertMethod,
-                                                          p: GKernel.instance.multiRaw[i],
-                                                          scl_halfTpPixelSt: GKernel.instance.scl_halfTpPixelSt,
-                                                          scl_pureTpPixelSt: GKernel.instance.scl_pureTpPixelSt,
-                                                          dithering: GKernel.instance.dithering,
-                                                          liteName: GKernel.instance.liteName.text,
-                                                          liteAuthor: GKernel.instance.liteAuthor.text,
-                                                          liteRegionName: GKernel.instance.liteRegionName.text,
-                                                          bI: int.parse(GKernel.instance.maH.text),
-                                                          bridge: GKernel.instance.bridge,
-                                                          compress: GKernel.instance.compress,
-                                                          endermanProof: GKernel.instance.endermanProof,
-                                                          exportType: GKernel.instance.exportType,
-                                                          fireProof: GKernel.instance.fireProof,
-                                                          maH: int.parse(GKernel.instance.maH.text),
-                                                          backgroundColor: GKernel.instance.backgroundColor));
-                                                  if (!r.s) {
-                                                    GKernel.instance.multiFail.add(r.p);
-                                                  }
-                                                  if (GKernel.instance.verbose) {
-                                                    GKernel.instance.multiProgress.value = i / (total) * 100;
-                                                  }
-                                                }
-                                                for (int i = 0; i < GKernel.instance.multiDir.length; i++) {
-                                                  Directory dir = Directory(GKernel.instance.multiDir[i]);
-                                                  Stream<FileSystemEntity> entityList = dir.list(recursive: false, followLinks: false);
-                                                  await for (FileSystemEntity entity in entityList) {
-                                                    if (entity.statSync().type == FileSystemEntityType.file &&
-                                                        ['.png', '.bmp', '.jpeg', '.jpg', '.tga', '.webp', '.tiff'].contains(path.extension(entity.path))) {
-                                                      var r = await tp.Executor().execute(
-                                                          fun1: exportMultiSingle,
-                                                          arg1: ExportMultiArgs(
-                                                              cpuid: -1,
-                                                              convertMethod: GKernel.instance.convertMethod,
-                                                              p: entity.path,
-                                                              scl_halfTpPixelSt: GKernel.instance.scl_halfTpPixelSt,
-                                                              scl_pureTpPixelSt: GKernel.instance.scl_pureTpPixelSt,
-                                                              dithering: GKernel.instance.dithering,
-                                                              liteName: GKernel.instance.liteName.text,
-                                                              liteAuthor: GKernel.instance.liteAuthor.text,
-                                                              liteRegionName: GKernel.instance.liteRegionName.text,
-                                                              bI: int.parse(GKernel.instance.maH.text),
-                                                              bridge: GKernel.instance.bridge,
-                                                              compress: GKernel.instance.compress,
-                                                              endermanProof: GKernel.instance.endermanProof,
-                                                              exportType: GKernel.instance.exportType,
-                                                              fireProof: GKernel.instance.fireProof,
-                                                              maH: int.parse(GKernel.instance.maH.text),
-                                                              backgroundColor: GKernel.instance.backgroundColor));
-                                                      if (!r.s) {
-                                                        GKernel.instance.multiFail.add(r.p);
+                                    child: ValueListenableBuilder(
+                                        valueListenable: GKernel.instance.building,
+                                        builder: (context, value, child) {
+                                          return FilledButton(
+                                            child: const Text('导出'),
+                                            onPressed: GKernel.instance.building.value
+                                                ? null
+                                                : () async {
+                                                    GKernel.instance.building.value = true;
+                                                    setState(() {});
+                                                    if (GKernel.instance.bI.text.isEmpty) {
+                                                      GKernel.instance.bI.text = '4';
+                                                    }
+                                                    if (GKernel.instance.maH.text.isEmpty) {
+                                                      GKernel.instance.maH.text = '255';
+                                                    }
+                                                    if (int.parse(GKernel.instance.maH.text) < 14) {
+                                                      GKernel.instance.maH.text = '14';
+                                                    }
+                                                    if (GKernel.instance.liteAuthor.text.isEmpty) {
+                                                      GKernel.instance.liteAuthor.text = 'SlopeCraft';
+                                                    }
+                                                    if (GKernel.instance.liteName.text.isEmpty) {
+                                                      GKernel.instance.liteName.text = 'Pixel Paint by SlopeCraft';
+                                                    }
+                                                    if (GKernel.instance.liteRegionName.text.isEmpty) {
+                                                      GKernel.instance.liteRegionName.text = 'Pixel Paint by SlopeCraft';
+                                                    }
+                                                    // var t0 = DateTime.now();
+                                                    GKernel.instance.threads = int.parse(GKernel.instance.th.text);
+                                                    if (GKernel.instance.multiSingleThread) {
+                                                      if (!GKernel.instance.verbose) {
+                                                        GKernel.instance.multiProgress.value = null;
                                                       }
-                                                      if (GKernel.instance.verbose) {
-                                                        GKernel.instance.multiProgress.value = i / (total) * 100;
+                                                      int total = GKernel.instance.multiRaw.length + GKernel.instance.multiDir.length;
+                                                      for (int i = 0; i < GKernel.instance.multiRaw.length; i++) {
+                                                        var r = await tp.Executor().execute(
+                                                            fun1: exportMultiSingle,
+                                                            arg1: ExportMultiArgs(
+                                                                cpuid: -1,
+                                                                convertMethod: GKernel.instance.convertMethod,
+                                                                p: GKernel.instance.multiRaw[i],
+                                                                scl_halfTpPixelSt: GKernel.instance.scl_halfTpPixelSt,
+                                                                scl_pureTpPixelSt: GKernel.instance.scl_pureTpPixelSt,
+                                                                dithering: GKernel.instance.dithering,
+                                                                liteName: GKernel.instance.liteName.text,
+                                                                liteAuthor: GKernel.instance.liteAuthor.text,
+                                                                liteRegionName: GKernel.instance.liteRegionName.text,
+                                                                bI: int.parse(GKernel.instance.maH.text),
+                                                                bridge: GKernel.instance.bridge,
+                                                                compress: GKernel.instance.compress,
+                                                                endermanProof: GKernel.instance.endermanProof,
+                                                                exportType: GKernel.instance.exportType,
+                                                                fireProof: GKernel.instance.fireProof,
+                                                                maH: int.parse(GKernel.instance.maH.text),
+                                                                backgroundColor: GKernel.instance.backgroundColor));
+                                                        if (!r.s) {
+                                                          GKernel.instance.multiFail.add(r.p);
+                                                        }
+                                                        if (GKernel.instance.verbose) {
+                                                          GKernel.instance.multiProgress.value = i / (total) * 100;
+                                                        }
+                                                      }
+                                                      for (int i = 0; i < GKernel.instance.multiDir.length; i++) {
+                                                        Directory dir = Directory(GKernel.instance.multiDir[i]);
+                                                        Stream<FileSystemEntity> entityList = dir.list(recursive: false, followLinks: false);
+                                                        await for (FileSystemEntity entity in entityList) {
+                                                          if (entity.statSync().type == FileSystemEntityType.file &&
+                                                              ['.png', '.bmp', '.jpeg', '.jpg', '.tga', '.webp', '.tiff']
+                                                                  .contains(path.extension(entity.path))) {
+                                                            var r = await tp.Executor().execute(
+                                                                fun1: exportMultiSingle,
+                                                                arg1: ExportMultiArgs(
+                                                                    cpuid: -1,
+                                                                    convertMethod: GKernel.instance.convertMethod,
+                                                                    p: entity.path,
+                                                                    scl_halfTpPixelSt: GKernel.instance.scl_halfTpPixelSt,
+                                                                    scl_pureTpPixelSt: GKernel.instance.scl_pureTpPixelSt,
+                                                                    dithering: GKernel.instance.dithering,
+                                                                    liteName: GKernel.instance.liteName.text,
+                                                                    liteAuthor: GKernel.instance.liteAuthor.text,
+                                                                    liteRegionName: GKernel.instance.liteRegionName.text,
+                                                                    bI: int.parse(GKernel.instance.maH.text),
+                                                                    bridge: GKernel.instance.bridge,
+                                                                    compress: GKernel.instance.compress,
+                                                                    endermanProof: GKernel.instance.endermanProof,
+                                                                    exportType: GKernel.instance.exportType,
+                                                                    fireProof: GKernel.instance.fireProof,
+                                                                    maH: int.parse(GKernel.instance.maH.text),
+                                                                    backgroundColor: GKernel.instance.backgroundColor));
+                                                            if (!r.s) {
+                                                              GKernel.instance.multiFail.add(r.p);
+                                                            }
+                                                            if (GKernel.instance.verbose) {
+                                                              GKernel.instance.multiProgress.value = i / (total) * 100;
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    } else {
+                                                      GKernel.instance.multiProgress.value = 0;
+                                                      if (!GKernel.instance.verbose) {
+                                                        GKernel.instance.multiProgress.value = null;
+                                                      }
+                                                      GKernel.instance.multiDirFiles.clear();
+                                                      GKernel.instance.multiFail.clear();
+                                                      for (int i = 0; i < GKernel.instance.multiDir.length; i++) {
+                                                        Directory dir = Directory(GKernel.instance.multiDir[i]);
+                                                        Stream<FileSystemEntity> entityList = dir.list(recursive: false, followLinks: false);
+                                                        await for (FileSystemEntity entity in entityList) {
+                                                          if (entity.statSync().type == FileSystemEntityType.file &&
+                                                              ['.png', '.bmp', '.jpeg', '.jpg', '.tga', '.webp', '.tiff']
+                                                                  .contains(path.extension(entity.path))) {
+                                                            if (!GKernel.instance.multiDirFiles.contains(entity.path)) {
+                                                              GKernel.instance.multiDirFiles.add(entity.path);
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                      GKernel.instance.finished = 0;
+                                                      int threads = GKernel.instance.threads;
+                                                      List<Future<void>?> t = List.filled(threads, null);
+                                                      for (int i = 0; i < threads; i++) {
+                                                        t[i] = export(i, i);
+                                                      }
+                                                      for (int i = 0; i < threads; i++) {
+                                                        if (t[i] != null) {
+                                                          await t[i];
+                                                        }
                                                       }
                                                     }
-                                                  }
-                                                }
-                                              } else {
-                                                GKernel.instance.multiProgress.value = 0;
-                                                if (!GKernel.instance.verbose) {
-                                                  GKernel.instance.multiProgress.value = null;
-                                                }
-                                                GKernel.instance.multiDirFiles.clear();
-                                                GKernel.instance.multiFail.clear();
-                                                for (int i = 0; i < GKernel.instance.multiDir.length; i++) {
-                                                  Directory dir = Directory(GKernel.instance.multiDir[i]);
-                                                  Stream<FileSystemEntity> entityList = dir.list(recursive: false, followLinks: false);
-                                                  await for (FileSystemEntity entity in entityList) {
-                                                    if (entity.statSync().type == FileSystemEntityType.file &&
-                                                        ['.png', '.bmp', '.jpeg', '.jpg', '.tga', '.webp', '.tiff'].contains(path.extension(entity.path))) {
-                                                      if (!GKernel.instance.multiDirFiles.contains(entity.path)) {
-                                                        GKernel.instance.multiDirFiles.add(entity.path);
-                                                      }
-                                                    }
-                                                  }
-                                                }
-                                                int threads = GKernel.instance.threads;
-                                                List<Future<void>?> t = List.filled(threads, null);
-                                                for (int i = 0; i < threads; i++) {
-                                                  t[i] = export(i, i);
-                                                }
-                                                for (int i = 0; i < threads; i++) {
-                                                  if (t[i] != null) {
-                                                    await t[i];
-                                                  }
-                                                }
-                                              }
-                                              // var t1 = DateTime.now();
-                                              showDialog(
-                                                context: context,
-                                                builder: (context) {
-                                                  return ContentDialog(
-                                                    title: const Text('完成'),
-                                                    // content: Text('${t1.difference(t0).inMilliseconds}ms'),
-                                                    content: const Text('转换完成'),
-                                                    actions: [
-                                                      Button(
-                                                        child: const Text('确定'),
-                                                        onPressed: () {
-                                                          Navigator.pop(context);
-                                                        },
-                                                      ),
-                                                    ],
-                                                  );
-                                                },
-                                              );
-                                              GKernel.instance.setType(context, true);
-                                              GKernel.instance.building = false;
-                                              GKernel.instance.multiProgress.value = 100.0;
-                                              setState(() {});
-                                              if (GKernel.instance.multiFail.isNotEmpty) {
-                                                await showDialog(
-                                                  context: context,
-                                                  builder: (context) {
-                                                    return ContentDialog(
-                                                      title: const Text('以下文件转换失败：'),
-                                                      constraints: const BoxConstraints(maxHeight: 600, maxWidth: 1000),
-                                                      content: ListView.builder(
-                                                        padding: const EdgeInsets.only(right: 16.0),
-                                                        itemCount: GKernel.instance.multiFail.length,
-                                                        itemBuilder: (context, index) {
-                                                          return ListTile(
-                                                            title: Text(
-                                                              GKernel.instance.multiFail[index],
-                                                              overflow: TextOverflow.ellipsis,
+                                                    // var t1 = DateTime.now();
+                                                    GKernel.instance.setType(context, true);
+                                                    GKernel.instance.building.value = false;
+                                                    GKernel.instance.multiProgress.value = 100.0;
+                                                    setState(() {});
+                                                    showDialog(
+                                                      context: context,
+                                                      builder: (context) {
+                                                        return ContentDialog(
+                                                          title: const Text('完成'),
+                                                          // content: Text('${t1.difference(t0).inMilliseconds}ms'),
+                                                          content: const Text('转换完成'),
+                                                          actions: [
+                                                            Button(
+                                                              child: const Text('确定'),
+                                                              onPressed: () {
+                                                                Navigator.pop(context);
+                                                              },
                                                             ),
+                                                          ],
+                                                        );
+                                                      },
+                                                    );
+                                                    if (GKernel.instance.multiFail.isNotEmpty) {
+                                                      await showDialog(
+                                                        context: context,
+                                                        builder: (context) {
+                                                          return ContentDialog(
+                                                            title: const Text('以下文件转换失败：'),
+                                                            constraints: const BoxConstraints(maxHeight: 600, maxWidth: 1000),
+                                                            content: ListView.builder(
+                                                              padding: const EdgeInsets.only(right: 16.0),
+                                                              itemCount: GKernel.instance.multiFail.length,
+                                                              itemBuilder: (context, index) {
+                                                                return ListTile(
+                                                                  title: Text(
+                                                                    GKernel.instance.multiFail[index],
+                                                                    overflow: TextOverflow.ellipsis,
+                                                                  ),
+                                                                );
+                                                              },
+                                                            ),
+                                                            actions: [
+                                                              Button(
+                                                                child: const Text('确定'),
+                                                                onPressed: () {
+                                                                  Navigator.pop(context);
+                                                                },
+                                                              ),
+                                                            ],
                                                           );
                                                         },
-                                                      ),
-                                                      actions: [
-                                                        Button(
-                                                          child: const Text('确定'),
-                                                          onPressed: () {
-                                                            Navigator.pop(context);
-                                                          },
-                                                        ),
-                                                      ],
-                                                    );
+                                                      );
+                                                    }
                                                   },
-                                                );
-                                              }
-                                            },
-                                    ),
+                                          );
+                                        }),
                                   ),
                                 ],
                               ),
@@ -542,10 +566,8 @@ class _ExportLitematicaState extends State<ExportLitematica> {
                   valueListenable: GKernel.instance.multiProgress,
                   builder: (context, value, child) {
                     return RepaintBoundary(
-                      child: Card(
-                        child: ProgressBar(
-                          value: GKernel.instance.multiProgress.value,
-                        ),
+                      child: ProgressBar(
+                        value: GKernel.instance.multiProgress.value,
                       ),
                     );
                   },
@@ -835,84 +857,88 @@ class _ExportLitematicaState extends State<ExportLitematica> {
                                   children: [
                                     Expanded(
                                       child: RepaintBoundary(
-                                        child: Button(
-                                          child: const Text('构建三维结构'),
-                                          onPressed: GKernel.instance.building
-                                              ? null
-                                              : () async {
-                                                  GKernel.instance.building = true;
-                                                  if (GKernel.instance.bI.text.isEmpty) {
-                                                    GKernel.instance.bI.text = '4';
-                                                  }
-                                                  if (GKernel.instance.maH.text.isEmpty) {
-                                                    GKernel.instance.maH.text = '255';
-                                                  }
-                                                  if (int.parse(GKernel.instance.maH.text) < 14) {
-                                                    GKernel.instance.maH.text = '14';
-                                                  }
-                                                  if (GKernel.instance.liteAuthor.text.isEmpty) {
-                                                    GKernel.instance.liteAuthor.text = 'SlopeCraft';
-                                                  }
-                                                  if (GKernel.instance.liteName.text.isEmpty) {
-                                                    GKernel.instance.liteName.text = 'Pixel Paint by SlopeCraft';
-                                                  }
-                                                  if (GKernel.instance.liteRegionName.text.isEmpty) {
-                                                    GKernel.instance.liteRegionName.text = 'Pixel Paint by SlopeCraft';
-                                                  }
-                                                  setState(() {});
-                                                  compute(
-                                                          build3D,
-                                                          BuildArgs(
-                                                              compress: GKernel.instance.compress,
-                                                              maH: int.parse(GKernel.instance.maH.text),
-                                                              bridge: GKernel.instance.bridge,
-                                                              bI: int.parse(GKernel.instance.bI.text),
-                                                              fireProof: GKernel.instance.fireProof,
-                                                              endermanProof: GKernel.instance.endermanProof))
-                                                      .then(
-                                                    (value) {
-                                                      if (value) {
-                                                        Pointer<Int32> x, y, z;
-                                                        x = ffi.calloc.call(1);
-                                                        y = ffi.calloc.call(1);
-                                                        z = ffi.calloc.call(1);
-                                                        GKernel.instance.scl.SCL_get3DSize(x, y, z);
-                                                        GKernel.instance.dx = x.value;
-                                                        GKernel.instance.dy = y.value;
-                                                        GKernel.instance.dz = z.value;
-                                                        ffi.calloc.free(x);
-                                                        ffi.calloc.free(y);
-                                                        ffi.calloc.free(z);
-                                                      }
-                                                      GKernel.instance.getConvertedImage();
-                                                      GKernel.instance.getBlockCounts();
-                                                      GKernel.instance.building = false;
-                                                      setState(() {});
+                                        child: ValueListenableBuilder(
+                                            valueListenable: GKernel.instance.building,
+                                            builder: (context, value, child) {
+                                              return Button(
+                                                child: const Text('构建三维结构'),
+                                                onPressed: GKernel.instance.building.value
+                                                    ? null
+                                                    : () async {
+                                                        GKernel.instance.building.value = true;
+                                                        if (GKernel.instance.bI.text.isEmpty) {
+                                                          GKernel.instance.bI.text = '4';
+                                                        }
+                                                        if (GKernel.instance.maH.text.isEmpty) {
+                                                          GKernel.instance.maH.text = '255';
+                                                        }
+                                                        if (int.parse(GKernel.instance.maH.text) < 14) {
+                                                          GKernel.instance.maH.text = '14';
+                                                        }
+                                                        if (GKernel.instance.liteAuthor.text.isEmpty) {
+                                                          GKernel.instance.liteAuthor.text = 'SlopeCraft';
+                                                        }
+                                                        if (GKernel.instance.liteName.text.isEmpty) {
+                                                          GKernel.instance.liteName.text = 'Pixel Paint by SlopeCraft';
+                                                        }
+                                                        if (GKernel.instance.liteRegionName.text.isEmpty) {
+                                                          GKernel.instance.liteRegionName.text = 'Pixel Paint by SlopeCraft';
+                                                        }
+                                                        setState(() {});
+                                                        compute(
+                                                                build3D,
+                                                                BuildArgs(
+                                                                    compress: GKernel.instance.compress,
+                                                                    maH: int.parse(GKernel.instance.maH.text),
+                                                                    bridge: GKernel.instance.bridge,
+                                                                    bI: int.parse(GKernel.instance.bI.text),
+                                                                    fireProof: GKernel.instance.fireProof,
+                                                                    endermanProof: GKernel.instance.endermanProof))
+                                                            .then(
+                                                          (value) {
+                                                            if (value) {
+                                                              Pointer<Int32> x, y, z;
+                                                              x = ffi.calloc.call(1);
+                                                              y = ffi.calloc.call(1);
+                                                              z = ffi.calloc.call(1);
+                                                              GKernel.instance.scl.SCL_get3DSize(x, y, z);
+                                                              GKernel.instance.dx = x.value;
+                                                              GKernel.instance.dy = y.value;
+                                                              GKernel.instance.dz = z.value;
+                                                              ffi.calloc.free(x);
+                                                              ffi.calloc.free(y);
+                                                              ffi.calloc.free(z);
+                                                            }
+                                                            GKernel.instance.getConvertedImage();
+                                                            GKernel.instance.getBlockCounts();
+                                                            GKernel.instance.building.value = false;
+                                                            setState(() {});
 
-                                                      showDialog(
-                                                        context: context,
-                                                        builder: (context) {
-                                                          return ContentDialog(
-                                                            title: const Text('构建'),
-                                                            content: Text('构建${value ? '成功' : '失败'}'),
-                                                            actions: [
-                                                              SizedBox(
-                                                                width: 150,
-                                                                child: Button(
-                                                                  child: const Text('确定'),
-                                                                  onPressed: () {
-                                                                    Navigator.pop(context);
-                                                                  },
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          );
-                                                        },
-                                                      );
-                                                    },
-                                                  );
-                                                },
-                                        ),
+                                                            showDialog(
+                                                              context: context,
+                                                              builder: (context) {
+                                                                return ContentDialog(
+                                                                  title: const Text('构建'),
+                                                                  content: Text('构建${value ? '成功' : '失败'}'),
+                                                                  actions: [
+                                                                    SizedBox(
+                                                                      width: 150,
+                                                                      child: Button(
+                                                                        child: const Text('确定'),
+                                                                        onPressed: () {
+                                                                          Navigator.pop(context);
+                                                                        },
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                );
+                                                              },
+                                                            );
+                                                          },
+                                                        );
+                                                      },
+                                              );
+                                            }),
                                       ),
                                     ),
                                     const SizedBox(width: 8),
@@ -1208,8 +1234,13 @@ class _ExportLitematicaState extends State<ExportLitematica> {
             const SizedBox(height: 10),
             Card(
               child: RepaintBoundary(
-                child: ProgressBar(
-                  value: GKernel.instance.building ? null : (GKernel.instance.scl.SCL_queryStep() >= step.builded ? 100.0 : 0.0),
+                child: ValueListenableBuilder(
+                  valueListenable: GKernel.instance.multiProgress,
+                  builder: (context, value, child) {
+                    return ProgressBar(
+                      value: GKernel.instance.building.value ? null : (GKernel.instance.scl.SCL_queryStep() >= step.builded ? 100.0 : 0.0),
+                    );
+                  },
                 ),
               ),
             ),

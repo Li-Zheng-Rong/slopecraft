@@ -461,39 +461,74 @@ class _ImportPictureState extends State<ImportPicture> {
                 child: Card(
                   child: DropTarget(
                     onDragDone: (detail) async {
-                      setState(() {
-                        if (detail.files.length == 1) {
-                          if (['.png', '.bmp', '.jpeg', '.jpg', '.tga', '.webp', '.tiff'].contains(path.extension(detail.files[0].path))) {
-                            GKernel.instance.importImage(context, detail.files[0].path);
+                      setState(
+                        () {
+                          if (detail.files.length == 1) {
+                            if (['.png', '.bmp', '.jpeg', '.jpg', '.tga', '.webp', '.tiff'].contains(path.extension(detail.files[0].path))) {
+                              if (FileStat.statSync(detail.files[0].path).type == FileSystemEntityType.directory) {
+                                showDialog(
+                                  builder: (context) {
+                                    return ContentDialog(
+                                      title: const Text('导入图片'),
+                                      content: const Text('请选择一个图片或切换到批量模式'),
+                                      actions: [
+                                        Button(
+                                          child: const Text('批量模式'),
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                            GKernel.instance.multiMode = true;
+                                            List<String> p = [];
+                                            for (var item in detail.files) {
+                                              p.add(item.path);
+                                            }
+                                            GKernel.instance.importMultiImage(context, p);
+                                            setState(() {});
+                                          },
+                                        ),
+                                        Button(
+                                          child: const Text('确定'),
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                  context: context,
+                                );
+                              } else {
+                                GKernel.instance.importImage(context, detail.files[0].path);
+                              }
+                            } else {
+                              showDialog(
+                                builder: (context) {
+                                  return ContentDialog(
+                                    title: const Text('导入图片'),
+                                    content: const Text('请选择一个图片'),
+                                    actions: [
+                                      SizedBox(
+                                        width: 150,
+                                        child: Button(
+                                          child: const Text('确定'),
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                                context: context,
+                              );
+                            }
                           } else {
                             showDialog(
                               builder: (context) {
                                 return ContentDialog(
                                   title: const Text('导入图片'),
-                                  content: const Text('请选择一个图片'),
+                                  content: const Text('请选择一个图片或切换到批量模式'),
                                   actions: [
-                                    SizedBox(
-                                      width: 150,
-                                      child: Button(
-                                          child: const Text('确定'),
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          }),
-                                    ),
-                                  ],
-                                );
-                              },
-                              context: context,
-                            );
-                          }
-                        } else {
-                          showDialog(
-                            builder: (context) {
-                              return ContentDialog(
-                                title: const Text('导入图片'),
-                                content: const Text('请选择一个图片或切换到批量模式'),
-                                actions: [
-                                  Button(
+                                    Button(
                                       child: const Text('批量模式'),
                                       onPressed: () {
                                         Navigator.pop(context);
@@ -504,19 +539,22 @@ class _ImportPictureState extends State<ImportPicture> {
                                         }
                                         GKernel.instance.importMultiImage(context, p);
                                         setState(() {});
-                                      }),
-                                  Button(
+                                      },
+                                    ),
+                                    Button(
                                       child: const Text('确定'),
                                       onPressed: () {
                                         Navigator.pop(context);
-                                      }),
-                                ],
-                              );
-                            },
-                            context: context,
-                          );
-                        }
-                      });
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                              context: context,
+                            );
+                          }
+                        },
+                      );
                     },
                     onDragEntered: (detail) {
                       setState(() {

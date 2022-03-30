@@ -8,7 +8,6 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:image/image.dart' as img;
 import 'package:logger/logger.dart';
 import 'package:path/path.dart' as path;
-import 'package:win32/win32.dart';
 import 'package:worker_manager/worker_manager.dart' as tp;
 
 import 'block.dart';
@@ -473,7 +472,7 @@ class GKernel {
     cacheWidth: 1,
   );
   Image? show;
-  bool building = false;
+  ValueNotifier<bool> building = ValueNotifier<bool>(false);
   TextEditingController th = TextEditingController(text: '8');
   int compress = compressSettings.Both;
   TextEditingController maH = TextEditingController(text: '255');

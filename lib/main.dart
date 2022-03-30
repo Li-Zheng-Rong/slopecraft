@@ -350,8 +350,6 @@ class WindowButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = FluentTheme.of(context);
-
     return const SizedBox(
       width: 138,
       height: 10,
