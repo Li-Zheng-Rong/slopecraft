@@ -36,6 +36,13 @@ class _ImportPictureState extends State<ImportPicture> {
     // '自定义',
   ];
   bool _dragging = false;
+  final flyoutController = FlyoutController();
+  @override
+  void dispose() {
+    // Dispose the controller to free up resources
+    flyoutController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -185,13 +192,18 @@ class _ImportPictureState extends State<ImportPicture> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Text(
-                              '将文件夹和/或文件拖动到左侧栏来添加',
+                              '将文件/文件夹拖动到左侧栏来添加。',
                               style: typography.bodyLarge,
                             ),
                             const SizedBox(height: 10.0),
                             Text(
-                              '图片的长宽（以像素为单位）最好是128的整倍数。',
+                              '图片的长宽（以像素为单位）最好不要超过512，不然后续转换可能较慢。',
                               style: typography.bodyLarge,
+                            ),
+                            const SizedBox(height: 10.0),
+                            Text(
+                              '图像的每一个像素都与Minecraft中的一个方块对应，图像的长宽就是像素画的长宽。每张地图的分辨率为128x128。对于大图片而不想损失分辨率，可以分割为多张128x128的小图片再批量转换。',
+                              style: typography.bodyStrong,
                             ),
                             const SizedBox(height: 10.0),
                             Text(
@@ -314,18 +326,20 @@ class _ImportPictureState extends State<ImportPicture> {
                                                               child: Column(
                                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                                                children: List.generate(BGCRadioButtons.length, (index) {
-                                                                  return SizedBox(
-                                                                    height: 27.0,
-                                                                    child: RadioButton(
-                                                                      checked: _BGCCurrentIndex == index,
-                                                                      onChanged: (value) {
-                                                                        setState(() => _BGCCurrentIndex = index);
-                                                                      },
-                                                                      content: Text(BGCRadioButtons[index]),
-                                                                    ),
-                                                                  );
-                                                                }),
+                                                                children: [
+                                                                  ...List.generate(BGCRadioButtons.length, (index) {
+                                                                    return SizedBox(
+                                                                      height: 27.0,
+                                                                      child: RadioButton(
+                                                                        checked: _BGCCurrentIndex == index,
+                                                                        onChanged: (value) {
+                                                                          setState(() => _BGCCurrentIndex = index);
+                                                                        },
+                                                                        content: Text(BGCRadioButtons[index]),
+                                                                      ),
+                                                                    );
+                                                                  }),
+                                                                ],
                                                               ),
                                                             ),
                                                           ),
@@ -626,8 +640,13 @@ class _ImportPictureState extends State<ImportPicture> {
                             ),
                             const SizedBox(height: 10.0),
                             Text(
-                              '图片的长宽（以像素为单位）最好是128的整倍数。',
+                              '图片的长宽（以像素为单位）最好不要超过512，不然后续转换可能较慢。',
                               style: typography.bodyLarge,
+                            ),
+                            const SizedBox(height: 10.0),
+                            Text(
+                              '图像的每一个像素都与Minecraft中的一个方块对应，图像的长宽就是像素画的长宽。如果你想制作大型的纯文件像素画，可以将图片分割为多张128x128的小图片再使用批量转换。',
+                              style: typography.bodyStrong,
                             ),
                             const SizedBox(height: 10.0),
                             Text(

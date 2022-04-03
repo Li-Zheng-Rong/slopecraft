@@ -244,12 +244,12 @@ class _ConvertMapState extends State<ConvertMap> {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     Text(
-                                      '第三步，调整颜色。地图支持的颜色有限，你的图片必须由地图允许的颜色组成。',
+                                      '第三步，调整颜色。由于地图只有256种颜色，必须调整图片的颜色为这256种之一。',
                                       style: typography.bodyLarge,
                                     ),
                                     const SizedBox(height: 5.0),
                                     Text(
-                                      '七种算法对应不同的调整颜色的方式。如果开启“抖动仿色”，SlopeCraft会尝试用相近的颜色混合，更好的贴近原图。',
+                                      '七种算法对应不同的调整颜色的方式。如果开启“抖动仿色”，SlopeCraft会尝试用相近的颜色混合，更好的贴近原图。其中AiCvter算法和其他不同，转换大图片速度较慢，但可能有最好的效果。',
                                       style: typography.bodyLarge,
                                     ),
                                     const SizedBox(height: 10.0),
@@ -516,12 +516,12 @@ class _ConvertMapState extends State<ConvertMap> {
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
                                   Text(
-                                    '第三步，调整颜色。地图支持的颜色有限，你的图片必须由地图允许的颜色组成。',
-                                    style: typography.body,
+                                    '第三步，调整颜色。由于地图只有256种颜色，必须调整图片的颜色为这256种之一。',
+                                    style: typography.bodyLarge,
                                   ),
                                   const SizedBox(height: 5.0),
                                   Text(
-                                    '七种算法对应不同的调整颜色的方式，你可以挨个试一试。如果开启“抖动仿色”，SlopeCraft会尝试用相近的颜色混合，更好的贴近原图。',
+                                    '七种算法对应不同的调整颜色的方式，你可以挨个试一试。如果开启“抖动仿色”，SlopeCraft会尝试用相近的颜色混合，更好的贴近原图。其中AiCvter算法和其他不同，转换大图片速度较慢，但可能有最好的效果。',
                                     style: typography.body,
                                   ),
                                   const SizedBox(height: 10.0),

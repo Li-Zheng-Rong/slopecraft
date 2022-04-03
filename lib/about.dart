@@ -83,9 +83,24 @@ class About extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Card(
-              child: Text(
-                '感谢你使用SlopeCraft，我是开发者TokiNoBug。SlopeCraft是由我开发的一款立体地图画生成器，主要用于在minecraft中制造可以生存实装的立体地图画（但同样支持传统的平板地图画）。立体地图画的优势在于拥有更高的“画质”，此处不再详述。\n你正在使用的是SlopeCraft的第三代版本，在开发时使用了zlib和eigen，对上述库的开发者表示感谢。也感谢Mojang，整个软件就是为minecraft而设计的。\nSlopeCraft遵循GPL-3.0及以后版本(GPL-3.0 or later)协议开放源代码。',
-                style: typography.body,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '感谢你使用 SlopeCraft。',
+                    style: typography.body,
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    '我是开发者 TokiNoBug 。 SlopeCraft 是由我开发的一款立体地图画生成器，主要用于在 Minecraft 中制造可以生存实装的立体地图画（同样支持传统的平板地图画）。立体地图画的优势在于拥有更高的“画质”，此处不再详述。\n我是开发者 PopChrono ，这一代 SlopeCraft 的界面由我制作。感谢 TokiNoBug 对我的支持和帮助，使这个项目成为可能。 SlopeCraft 是一个强大的工具，耗费了大量时间进行开发，而我只是给这个工具锦上添花而已。',
+                    style: typography.body,
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    '你正在使用的是 SlopeCraft 的第四代版本，在开发时使用了 zlib 和 Eigen ，对上述库的开发者表示感谢。也感谢 Mojang ，整个软件就是为 Minecraft 而设计的。\nSlopeCraft 遵循 GPL-3.0 及以后版本 (GPL-3.0 or later) 协议开放源代码。',
+                    style: typography.body,
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 10),

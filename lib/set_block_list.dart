@@ -233,12 +233,17 @@ class _SetBlockListState extends State<SetBlockList> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Text(
-                            '第一步，给每一种颜色设置对应的方块，我们有四种预设。',
+                            '第一步，给每一种颜色设置对应的方块。我们有四种预设。',
                             style: typography.body,
                           ),
                           const SizedBox(height: 8.0),
                           Text(
-                            '你也可以在右侧的滚动条里自定义。每一列方块对应一种颜色，每种颜色只能选择一种方块。你也可以勾掉启用，禁用任何一种颜色。',
+                            'Minecraft中的地图共有64种可能的基色，每一种通过不同的高度变化运算与4种地图色关联。所有方块都会被转换为某一种基色，同时一种基色也可以由多种不同的方块得到。',
+                            style: typography.body,
+                          ),
+                          const SizedBox(height: 8.0),
+                          Text(
+                            '你可以在右侧自定义每一种基色所选用的方块。每种颜色只能选择一种方块，你也可以禁用任何一种颜色。',
                             style: typography.body,
                           ),
                         ],

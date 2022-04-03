@@ -57,10 +57,10 @@ class _ExportMapState extends State<ExportMap> {
               ),
               const SizedBox(width: 8),
               SizedBox(
-                width: 200,
+                width: 150,
                 child: Checkbox(
                   checked: !GKernel.instance.multiSingleThread,
-                  content: const Text('启用多线程（实验性）'),
+                  content: const Text('启用多线程'),
                   onChanged: (val) {
                     GKernel.instance.multiSingleThread = !(val!);
                     setState(() {});
@@ -102,14 +102,14 @@ class _ExportMapState extends State<ExportMap> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text('地图文件的文件名形如map_3.dat，是minecraft用于存储地图内容的文件。其中3表示地图文件的序号,地图的序号从0开始。', style: typography.bodyLarge),
+                      Text('地图文件的文件名形如map_3.dat，是Minecraft用于存储地图内容的文件。其中3表示地图文件的序号,地图的序号从0开始。', style: typography.bodyLarge),
                       Text('地图文件存储于存档中的data文件夹下，你需要一定的权限才能修改它们。如果你既不是单机游戏，又不是服主，那你应该选择导出为投影，而不是地图文件。', style: typography.bodyLarge),
                       Text('每张地图只能显示128×128的画面，大图片可能会有多个地图，对应多个地图文件。它们会占用连续的一段序号。', style: typography.bodyLarge),
                       Text('例如，你可以使用/give @s filled_map{map:3}来获得map_3.dat的地图。', style: typography.bodyLarge),
                       Text('1.12版请使用/give @p filled_map 1 3', style: typography.bodyLarge),
-                      Text('这种方法适合以最高画质展示大图片，但不适合服务器。', style: typography.bodyLarge),
+                      Text('这种方法适合以最高画质展示大图片。', style: typography.bodyLarge),
                       const SizedBox(height: 5),
-                      Text('文件将会导出到图片所在路径与文件同名的文件夹下。', style: typography.bodyLarge),
+                      Text('如果启用"多线程"，会同时转换多张图片。请根据自己的CPU核数合理选择线程数。"进度显示"可以实时显示转换进度，但在单线程模式下效果较差。', style: typography.bodyLarge),
                     ],
                   ),
                 ),
@@ -386,7 +386,7 @@ class _ExportMapState extends State<ExportMap> {
                     Text('每张地图只能显示128×128的画面，大图片可能会有多个地图，对应多个地图文件。它们会占用连续的一段序号。', style: typography.body),
                     Text('例如，你可以使用/give @s filled_map{map:3}来获得map_3.dat的地图。', style: typography.body),
                     Text('1.12版请使用/give @p filled_map 1 3', style: typography.body),
-                    Text('这种方法适合以最高画质展示大图片，但不适合服务器。', style: typography.body),
+                    Text('这种方法适合以最高画质展示大图片。', style: typography.body),
                   ],
                 ),
               ),

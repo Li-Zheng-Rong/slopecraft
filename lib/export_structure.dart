@@ -60,10 +60,10 @@ class _ExportStructureState extends State<ExportStructure> {
               ),
               const SizedBox(width: 8),
               SizedBox(
-                width: 200,
+                width: 150,
                 child: Checkbox(
                   checked: !GKernel.instance.multiSingleThread,
-                  content: const Text('启用多线程（实验性）'),
+                  content: const Text('启用多线程'),
                   onChanged: (val) {
                     GKernel.instance.multiSingleThread = !(val!);
                     setState(() {});
@@ -294,7 +294,9 @@ class _ExportStructureState extends State<ExportStructure> {
                                   children: [
                                     Text('最后一步，将立体地图画导出为结构文件。（除非你真的需要，否则建议导出为投影文件）', style: typography.bodyLarge),
                                     const SizedBox(height: 5),
-                                    Text('如果您启用了“允许压缩高度”，SlopeCraft会在构建三维结构时尝试依据地图绘制的规律压缩立体地图画的高度，这可以有效避免超过限高（但未必能成功）。', style: typography.bodyLarge),
+                                    Text('如果您启用了“允许压缩高度”，SlopeCraft会在构建三维结构时尝试依据地图绘制的规律压缩立体地图画的高度，这可以有效避免超过限高（但可能不成功）。', style: typography.bodyLarge),
+                                    const SizedBox(height: 5),
+                                    Text('如果启用"多线程"，会同时转换多张图片以提高速度。请根据自己的CPU核数合理选择线程数。"进度显示"可以实时显示转换进度，但在单线程模式下效果较差。', style: typography.bodyLarge),
                                   ],
                                 ),
                               ),
@@ -698,11 +700,11 @@ class _ExportStructureState extends State<ExportStructure> {
                                 children: [
                                   Text('最后一步，将立体地图画导出为结构文件。（除非你真的需要，否则建议导出为投影文件）', style: typography.body),
                                   const SizedBox(height: 5),
-                                  Text('如果您启用了“允许压缩高度”，SlopeCraft会在构建三维结构时尝试依据地图绘制的规律压缩立体地图画的高度，这可以有效避免超过限高（但未必能成功）。', style: typography.body),
+                                  Text('如果您启用了“允许压缩高度”，SlopeCraft会在构建三维结构时尝试依据地图绘制的规律压缩立体地图画的高度，这可以有效避免超过限高（但可能不成功）。', style: typography.body),
                                   const SizedBox(height: 5),
                                   Text('下面的两个栏显示了立体地图画的信息，以供参考。', style: typography.body),
                                   const SizedBox(height: 5),
-                                  Text('这个过程可能会很慢', style: typography.bodyLarge),
+                                  Text('如果启用压缩高度，这个过程可能会很慢。', style: typography.body),
                                 ],
                               ),
                             ),

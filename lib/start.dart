@@ -59,7 +59,27 @@ class _StartState extends State<Start> {
       );
     }
     return ScaffoldPage(
-      header: const PageHeader(title: Text('开始')),
+      header: PageHeader(
+        title: const Text('开始'),
+        commandBar: SizedBox(
+          width: 150,
+          child: FilledButton(
+            child: const Text('下一步'),
+            onPressed: () async {
+              GKernel.instance.index.value = 1;
+              bool cvready = GKernel.instance.scl.SCL_queryStep() >= step.convertionReady;
+              if (GKernel.instance.scl.SCL_queryStep() >= step.wait4Image) {
+                await GKernel.instance.setType(context, true);
+                GKernel.instance.index.value = 2;
+                if (cvready) {
+                  await GKernel.instance.setRawImage(context, true);
+                  GKernel.instance.index.value = 3;
+                }
+              }
+            },
+          ),
+        ),
+      ),
       content: Column(
         children: [
           Padding(
@@ -74,7 +94,7 @@ class _StartState extends State<Start> {
                     textAlign: TextAlign.center,
                   ),
                   Text(
-                    'Copyright © 2022 TokiNoBug',
+                    'Minecraft Map Pixel Tool',
                     style: typography.bodyLarge,
                     textAlign: TextAlign.center,
                   ),
@@ -88,43 +108,57 @@ class _StartState extends State<Start> {
               child: Card(
                 child: ListView(
                   children: [
-                    if (GKernel.instance.mapType == mapTypes.Slope)
-                      (Text(
+                    if (GKernel.instance.mapType == mapTypes.Slope) ...[
+                      Text(
                         '立体地图画',
                         style: typography.title,
-                      )),
-                    if (GKernel.instance.mapType == mapTypes.Flat)
-                      (Text(
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        '原版生存中画质最高的地图画',
+                        style: typography.bodyLarge,
+                      ),
+                      Text(
+                        '183种颜色是坡度起伏的馈赠，也是智慧的灵光闪现。',
+                        style: typography.bodyLarge,
+                      )
+                    ],
+                    if (GKernel.instance.mapType == mapTypes.Flat) ...[
+                      Text(
                         '平板地图画',
                         style: typography.title,
-                      )),
-                    if (GKernel.instance.mapType == mapTypes.FileOnly)
-                      (Text(
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        '最传统的像素画样式',
+                        style: typography.bodyLarge,
+                      ),
+                      Text(
+                        '建造起来轻松自如。不过，代价是只有61色的画质。',
+                        style: typography.bodyLarge,
+                      ),
+                    ],
+                    if (GKernel.instance.mapType == mapTypes.FileOnly) ...[
+                      Text(
                         '纯文件地图画',
                         style: typography.title,
-                      )),
-                    if (GKernel.instance.mapType == mapTypes.Slope)
-                      (Text(
-                        '原版生存中画质最高的地图画。183种颜色是坡度起伏的馈赠，也是智慧的灵光闪现。',
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        '这是原版地图画质的极限！',
                         style: typography.bodyLarge,
-                      )),
-                    if (GKernel.instance.mapType == mapTypes.Flat)
-                      (Text(
-                        '最传统的像素画样式，建造起来轻松自如。不过，代价是只有61色的画质。',
+                      ),
+                      Text(
+                        '244种颜色竭力为你呈现自定义的画面。可惜的是，它需要修改存档。',
                         style: typography.bodyLarge,
-                      )),
-                    if (GKernel.instance.mapType == mapTypes.FileOnly)
-                      (Text(
-                        '这是地图画质的极限！244种颜色竭力为你呈现自定义的画面。可惜的是，它需要修改存档。',
-                        style: typography.bodyLarge,
-                      )),
-                    if (GKernel.instance.mapType == mapTypes.FileOnly) (const SizedBox(height: 20.0)),
-                    if (GKernel.instance.mapType == mapTypes.FileOnly)
-                      (Text(
+                      ),
+                      const SizedBox(height: 20.0),
+                      Text(
                         'Not Vanilla!',
                         style: typography.apply(displayColor: Colors.yellow).subtitle,
                         textAlign: TextAlign.center,
-                      )),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -147,16 +181,6 @@ class _StartState extends State<Start> {
                           onChanged: (value) async {
                             if (value) {
                               GKernel.instance.mapType = mapTypes.Slope;
-                              GKernel.instance.index.value = 1;
-                              bool cvready = GKernel.instance.scl.SCL_queryStep() >= step.convertionReady;
-                              if (GKernel.instance.scl.SCL_queryStep() >= step.wait4Image) {
-                                await GKernel.instance.setType(context, true);
-                                GKernel.instance.index.value = 2;
-                                if (cvready) {
-                                  await GKernel.instance.setRawImage(context, true);
-                                  GKernel.instance.index.value = 3;
-                                }
-                              }
                             }
                             setState(() {});
                           },
@@ -176,16 +200,6 @@ class _StartState extends State<Start> {
                           onChanged: (value) async {
                             if (value) {
                               GKernel.instance.mapType = mapTypes.Flat;
-                              GKernel.instance.index.value = 1;
-                              bool cvready = GKernel.instance.scl.SCL_queryStep() >= step.convertionReady;
-                              if (GKernel.instance.scl.SCL_queryStep() >= step.wait4Image) {
-                                await GKernel.instance.setType(context, true);
-                                GKernel.instance.index.value = 2;
-                                if (cvready) {
-                                  await GKernel.instance.setRawImage(context, true);
-                                  GKernel.instance.index.value = 3;
-                                }
-                              }
                             }
                             setState(() {});
                           },
@@ -203,17 +217,6 @@ class _StartState extends State<Start> {
                         onChanged: (value) async {
                           if (value) {
                             GKernel.instance.mapType = mapTypes.FileOnly;
-                            GKernel.instance.exportType = ExportType.file;
-                            GKernel.instance.index.value = 1;
-                            bool cvready = GKernel.instance.scl.SCL_queryStep() >= step.convertionReady;
-                            if (GKernel.instance.scl.SCL_queryStep() >= step.wait4Image) {
-                              await GKernel.instance.setType(context, true);
-                              GKernel.instance.index.value = 2;
-                              if (cvready) {
-                                await GKernel.instance.setRawImage(context, true);
-                                GKernel.instance.index.value = 3;
-                              }
-                            }
                           }
                           setState(() {});
                         },

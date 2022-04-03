@@ -72,10 +72,10 @@ class _ExportLitematicaState extends State<ExportLitematica> {
               ),
               const SizedBox(width: 8),
               SizedBox(
-                width: 180,
+                width: 150,
                 child: Checkbox(
                   checked: !GKernel.instance.multiSingleThread,
-                  content: const Text('启用多线程（实验性）'),
+                  content: const Text('启用多线程'),
                   onChanged: (val) {
                     GKernel.instance.multiSingleThread = !(val!);
                     setState(() {});
@@ -360,11 +360,13 @@ class _ExportLitematicaState extends State<ExportLitematica> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.stretch,
                                   children: [
-                                    Text('最后一步，将立体地图画导出为投影文件，这很方便生存实装，是不是？', style: typography.bodyLarge),
+                                    Text('最后一步，将立体地图画导出为投影文件。', style: typography.bodyLarge),
                                     const SizedBox(height: 5),
-                                    Text('左侧个栏是投影文件的一些属性，空着不填也完全没问题。', style: typography.bodyLarge),
+                                    Text('左侧栏是投影文件的一些属性，空着不填也完全没问题。', style: typography.bodyLarge),
                                     const SizedBox(height: 5),
-                                    Text('如果您启用了“允许压缩高度”，SlopeCraft会在构建三维结构时尝试依据地图绘制的规律压缩立体地图画的高度，这可以有效避免超过限高（但未必能成功）。', style: typography.bodyLarge),
+                                    Text('如果您启用了“允许压缩高度”，SlopeCraft会在构建三维结构时尝试依据地图绘制的规律压缩立体地图画的高度，这可以有效避免超过限高（但可能不成功）。', style: typography.bodyLarge),
+                                    const SizedBox(height: 5),
+                                    Text('如果启用"多线程"，会同时转换多张图片。请根据自己的CPU核数合理选择线程数。"进度显示"可以实时显示转换进度，但在单线程模式下效果较差。', style: typography.bodyLarge),
                                   ],
                                 ),
                               ),
@@ -841,13 +843,13 @@ class _ExportLitematicaState extends State<ExportLitematica> {
                                 children: [
                                   Text('最后一步，将立体地图画导出为投影文件，这很方便生存实装，是不是？', style: typography.body),
                                   const SizedBox(height: 5),
-                                  Text('左侧的三个栏是投影文件的一些属性，空着不填也完全没问题。', style: typography.body),
+                                  Text('左侧栏是投影文件的一些属性，空着不填也完全没问题。', style: typography.body),
                                   const SizedBox(height: 5),
-                                  Text('如果您启用了“允许压缩高度”，SlopeCraft会在构建三维结构时尝试依据地图绘制的规律压缩立体地图画的高度，这可以有效避免超过限高（但未必能成功）。', style: typography.body),
+                                  Text('如果您启用了“允许压缩高度”，SlopeCraft会在构建三维结构时尝试依据地图绘制的规律压缩立体地图画的高度，这可以有效避免超过限高（但可能不成功）。', style: typography.body),
                                   const SizedBox(height: 5),
                                   Text('下面的两个栏显示了立体地图画的信息，以供参考。', style: typography.body),
                                   const SizedBox(height: 5),
-                                  Text('这个过程可能会很慢', style: typography.bodyLarge),
+                                  Text('如果启用压缩高度，这个过程可能会很慢', style: typography.body),
                                 ],
                               ),
                             ),
