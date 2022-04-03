@@ -37,7 +37,9 @@ class ExportMultiArgs {
       required this.fireProof,
       required this.maH,
       required this.backgroundColor,
-      required this.cpuid});
+      required this.cpuid,
+      required this.exportDir,
+      required this.mapId});
   String convertMethod, p;
 
   // ignore: non_constant_identifier_names
@@ -57,6 +59,8 @@ class ExportMultiArgs {
   bool fireProof;
   bool endermanProof;
   Color backgroundColor;
+  String exportDir;
+  int mapId;
 }
 
 class ExportMultiReturn {
@@ -428,6 +432,8 @@ class GKernel {
   bool multiMode = false;
   List<String> multiRaw = [];
   String current = path.current;
+  int mapid = 0;
+  String mapdir = path.current;
   ValueNotifier<int> index = ValueNotifier<int>(0);
   Color backgroundColor = const Color.fromARGB(255, 220, 220, 220);
   int mapType = 0;
@@ -1178,7 +1184,7 @@ ExportMultiReturn exportMulti(ExportMultiArgs args) {
     GKernel.instance.sclcpu[args.cpuid].SCL_exportAsStructure(pg, nullptr);
     return ExportMultiReturn(s: true, p: args.p);
   } else if (args.exportType == ExportType.file) {
-    String outputFile = path.withoutExtension(args.p);
+    String outputFile = path.withoutExtension(args.exportDir);
     var dir = Directory(outputFile);
     if (!dir.existsSync()) {
       dir.createSync();
@@ -1193,7 +1199,7 @@ ExportMultiReturn exportMulti(ExportMultiArgs args) {
     }
     pg.elementAt(gbk.length).value = 0;
 
-    GKernel.instance.sclcpu[args.cpuid].SCL_exportAsData(pg, 0, nullptr, nullptr);
+    GKernel.instance.sclcpu[args.cpuid].SCL_exportAsData(pg, args.mapId, nullptr, nullptr);
 
     return ExportMultiReturn(s: true, p: args.p);
   }
@@ -1308,11 +1314,12 @@ ExportMultiReturn exportMultiSingle(ExportMultiArgs args) {
     GKernel.instance.scl.SCL_exportAsStructure(pg, nullptr);
     return ExportMultiReturn(s: true, p: args.p);
   } else if (args.exportType == ExportType.file) {
-    String outputFile = path.withoutExtension(args.p);
+    String outputFile = path.withoutExtension(args.exportDir);
     var dir = Directory(outputFile);
     if (!dir.existsSync()) {
       dir.createSync();
-    } else if (dir.statSync().type != FileSystemEntityType.directory) {
+    }
+    if (dir.statSync().type != FileSystemEntityType.directory) {
       return ExportMultiReturn(s: false, p: args.p);
     }
     final gbk = const GbkCodec(allowInvalid: false).encode(outputFile);
@@ -1323,7 +1330,7 @@ ExportMultiReturn exportMultiSingle(ExportMultiArgs args) {
     }
     pg.elementAt(gbk.length).value = 0;
 
-    GKernel.instance.scl.SCL_exportAsData(pg, 0, nullptr, nullptr);
+    GKernel.instance.scl.SCL_exportAsData(pg, args.mapId, nullptr, nullptr);
 
     return ExportMultiReturn(s: true, p: args.p);
   }
@@ -1334,6 +1341,22 @@ Future<void> export(int i, int cpuid) async {
   int total = GKernel.instance.multiRaw.length + GKernel.instance.multiDirFiles.length;
   if (i >= total) {
     return;
+  }
+  int id = GKernel.instance.mapid;
+  int wid = 0, hei = 0;
+  if (GKernel.instance.exportType == ExportType.file) {
+    String p =
+        i >= GKernel.instance.multiDirFiles.length ? GKernel.instance.multiRaw[i - GKernel.instance.multiDirFiles.length] : GKernel.instance.multiDirFiles[i];
+    List<int> f = File(p).readAsBytesSync();
+    img.Image? r = img.decodeNamedImage(f, path.extension(p));
+    if (r != null) {
+      hei = (r.height / 128).ceil();
+      wid = (r.width / 128).ceil();
+      GKernel.instance.mapid += hei * wid;
+    } else {
+      GKernel.instance.multiFail.add(p);
+      return;
+    }
   }
   var value = await tp.Executor().execute(
     fun1: exportMulti,
@@ -1356,7 +1379,9 @@ Future<void> export(int i, int cpuid) async {
         exportType: GKernel.instance.exportType,
         fireProof: GKernel.instance.fireProof,
         maH: int.parse(GKernel.instance.maH.text),
-        backgroundColor: GKernel.instance.backgroundColor),
+        backgroundColor: GKernel.instance.backgroundColor,
+        exportDir: GKernel.instance.mapdir,
+        mapId: id),
   );
   if (!value.s) {
     GKernel.instance.multiFail.add(value.p);

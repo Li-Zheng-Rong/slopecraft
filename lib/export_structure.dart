@@ -358,7 +358,9 @@ class _ExportStructureState extends State<ExportStructure> {
                                                               exportType: GKernel.instance.exportType,
                                                               fireProof: GKernel.instance.fireProof,
                                                               maH: int.parse(GKernel.instance.maH.text),
-                                                              backgroundColor: GKernel.instance.backgroundColor));
+                                                              backgroundColor: GKernel.instance.backgroundColor,
+                                                              exportDir: '',
+                                                              mapId: 0));
                                                       if (!r.s) {
                                                         GKernel.instance.multiFail.add(r.p);
                                                       }
@@ -392,7 +394,9 @@ class _ExportStructureState extends State<ExportStructure> {
                                                                   exportType: GKernel.instance.exportType,
                                                                   fireProof: GKernel.instance.fireProof,
                                                                   maH: int.parse(GKernel.instance.maH.text),
-                                                                  backgroundColor: GKernel.instance.backgroundColor));
+                                                                  backgroundColor: GKernel.instance.backgroundColor,
+                                                                  exportDir: '',
+                                                                  mapId: 0));
                                                           if (!r.s) {
                                                             GKernel.instance.multiFail.add(r.p);
                                                           }

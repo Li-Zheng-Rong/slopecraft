@@ -159,7 +159,18 @@ class About extends StatelessWidget {
                               }
                             }
                           : null,
-                      content: const Text('Aero      (Windows 7)'),
+                      content: const Text('Aero      (Windows 7) 可能无效'),
+                    ),
+                    const SizedBox(height: 8),
+                    RadioButton(
+                      checked: appTheme.windowEffect == WindowEffect.transparent,
+                      onChanged: (val) {
+                        if (val) {
+                          appTheme.windowEffect = WindowEffect.transparent;
+                          appTheme.setEffect(WindowEffect.transparent, context);
+                        }
+                      },
+                      content: const Text('Transparent'),
                     ),
                   ],
                 ),

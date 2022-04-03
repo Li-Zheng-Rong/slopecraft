@@ -68,7 +68,6 @@ void main(List<String> args) async {
   }
   if (isDesktop) {
     await windowManager.ensureInitialized();
-    await flutter_acrylic.Window.initialize();
 
     if (isWindowsVersionOrGreater(10, 0, 22000)) {
       GKernel.instance.osversion = OSVersion.win11;
@@ -77,15 +76,16 @@ void main(List<String> args) async {
     } else {
       GKernel.instance.osversion = OSVersion.win7;
     }
-    if (GKernel.instance.osversion == OSVersion.win11) {
-      await flutter_acrylic.Window.setEffect(effect: flutter_acrylic.WindowEffect.acrylic, dark: await SystemTheme.darkMode);
-    } else if (GKernel.instance.osversion == OSVersion.win10) {
-      await flutter_acrylic.Window.setEffect(effect: flutter_acrylic.WindowEffect.disabled, dark: await SystemTheme.darkMode);
-    } else {
-      await flutter_acrylic.Window.setEffect(effect: flutter_acrylic.WindowEffect.aero, dark: await SystemTheme.darkMode);
-    }
 
     windowManager.waitUntilReadyToShow().then((_) async {
+      await flutter_acrylic.Window.initialize();
+      if (GKernel.instance.osversion == OSVersion.win11) {
+        await flutter_acrylic.Window.setEffect(effect: flutter_acrylic.WindowEffect.acrylic, dark: await SystemTheme.darkMode);
+      } else if (GKernel.instance.osversion == OSVersion.win10) {
+        await flutter_acrylic.Window.setEffect(effect: flutter_acrylic.WindowEffect.disabled, dark: await SystemTheme.darkMode);
+      } else {
+        await flutter_acrylic.Window.setEffect(effect: flutter_acrylic.WindowEffect.aero, dark: await SystemTheme.darkMode);
+      }
       // await windowManager.setTitleBarStyle(TitleBarStyle.hidden, windowButtonVisibility: false);
       await windowManager.setSize(const Size(1000, 610));
       await windowManager.setMinimumSize(const Size(1000, 610));

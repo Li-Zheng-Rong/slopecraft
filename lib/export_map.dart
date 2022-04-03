@@ -8,6 +8,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path;
 import 'package:worker_manager/worker_manager.dart' as tp;
+import 'package:image/image.dart' as img;
 
 import 'kernel.dart';
 import 'scl_interface.dart';
@@ -145,12 +146,33 @@ class _ExportMapState extends State<ExportMap> {
                                         GKernel.instance.building.value = true;
                                         setState(() {});
                                         // var t0 = DateTime.now();
+                                        String? selectedDirectory = await file_picker.FilePicker.platform.getDirectoryPath();
+
+                                        if (selectedDirectory == null) {
+                                          return;
+                                        }
+                                        GKernel.instance.mapdir = selectedDirectory;
                                         if (GKernel.instance.multiSingleThread) {
+                                          GKernel.instance.mapid = 0;
                                           if (!GKernel.instance.verbose) {
                                             GKernel.instance.multiProgress.value = null;
                                           }
                                           int total = GKernel.instance.multiRaw.length + GKernel.instance.multiDir.length;
                                           for (int i = 0; i < GKernel.instance.multiRaw.length; i++) {
+                                            int id = GKernel.instance.mapid;
+                                            int wid = 0, hei = 0;
+                                            if (GKernel.instance.exportType == ExportType.file) {
+                                              String p = GKernel.instance.multiRaw[i];
+                                              List<int> f = File(p).readAsBytesSync();
+                                              img.Image? r = img.decodeNamedImage(f, path.extension(p));
+                                              if (r != null) {
+                                                hei = (r.height / 128).ceil();
+                                                wid = (r.width / 128).ceil();
+                                                GKernel.instance.mapid += hei * wid;
+                                              } else {
+                                                GKernel.instance.multiFail.add(p);
+                                              }
+                                            }
                                             var r = await tp.Executor().execute(
                                                 fun1: exportMultiSingle,
                                                 arg1: ExportMultiArgs(
@@ -170,7 +192,9 @@ class _ExportMapState extends State<ExportMap> {
                                                     exportType: GKernel.instance.exportType,
                                                     fireProof: GKernel.instance.fireProof,
                                                     maH: int.parse(GKernel.instance.maH.text),
-                                                    backgroundColor: GKernel.instance.backgroundColor));
+                                                    backgroundColor: GKernel.instance.backgroundColor,
+                                                    exportDir: GKernel.instance.mapdir,
+                                                    mapId: id));
                                             if (!r.s) {
                                               GKernel.instance.multiFail.add(r.p);
                                             }
@@ -184,6 +208,20 @@ class _ExportMapState extends State<ExportMap> {
                                             await for (FileSystemEntity entity in entityList) {
                                               if (entity.statSync().type == FileSystemEntityType.file &&
                                                   ['.png', '.bmp', '.jpeg', '.jpg', '.tga', '.webp', '.tiff'].contains(path.extension(entity.path))) {
+                                                int id = GKernel.instance.mapid;
+                                                int wid = 0, hei = 0;
+                                                if (GKernel.instance.exportType == ExportType.file) {
+                                                  String p = entity.path;
+                                                  List<int> f = File(p).readAsBytesSync();
+                                                  img.Image? r = img.decodeNamedImage(f, path.extension(p));
+                                                  if (r != null) {
+                                                    hei = (r.height / 128).ceil();
+                                                    wid = (r.width / 128).ceil();
+                                                    GKernel.instance.mapid += hei * wid;
+                                                  } else {
+                                                    GKernel.instance.multiFail.add(p);
+                                                  }
+                                                }
                                                 var r = await tp.Executor().execute(
                                                     fun1: exportMultiSingle,
                                                     arg1: ExportMultiArgs(
@@ -203,7 +241,9 @@ class _ExportMapState extends State<ExportMap> {
                                                         exportType: GKernel.instance.exportType,
                                                         fireProof: GKernel.instance.fireProof,
                                                         maH: int.parse(GKernel.instance.maH.text),
-                                                        backgroundColor: GKernel.instance.backgroundColor));
+                                                        backgroundColor: GKernel.instance.backgroundColor,
+                                                        exportDir: GKernel.instance.mapdir,
+                                                        mapId: id));
                                                 if (!r.s) {
                                                   GKernel.instance.multiFail.add(r.p);
                                                 }
@@ -215,6 +255,7 @@ class _ExportMapState extends State<ExportMap> {
                                           }
                                         } else {
                                           GKernel.instance.finished = 0;
+                                          GKernel.instance.mapid = 0;
                                           if (!GKernel.instance.verbose) {
                                             GKernel.instance.multiProgress.value = null;
                                           }
@@ -255,7 +296,7 @@ class _ExportMapState extends State<ExportMap> {
                                             return ContentDialog(
                                               title: const Text('完成'),
                                               // content: Text('${t1.difference(t0).inMilliseconds}ms'),
-                                              content: const Text('转换完成'),
+                                              content: const Text('导出完成'),
                                               actions: [
                                                 Button(
                                                   child: const Text('确定'),

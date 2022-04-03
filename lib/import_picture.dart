@@ -78,15 +78,27 @@ class _ImportPictureState extends State<ImportPicture> {
     if (GKernel.instance.multiMode) {
       return ScaffoldPage(
         header: PageHeader(
-          title: const Text('导入图片-批量模式'),
-          commandBar: Button(
-            child: const Text('切换到普通模式'),
-            onPressed: () {
-              GKernel.instance.multiMode = false;
-              setState(() {});
-            },
-          ),
-        ),
+            title: const Text('导入图片-批量模式'),
+            commandBar: Row(
+              children: [
+                Button(
+                  child: const Text('清空已加载的文件'),
+                  onPressed: () {
+                    GKernel.instance.multiDir.clear();
+                    GKernel.instance.multiRaw.clear();
+                    setState(() {});
+                  },
+                ),
+                const SizedBox(width: 8),
+                Button(
+                  child: const Text('切换到普通模式'),
+                  onPressed: () {
+                    GKernel.instance.multiMode = false;
+                    setState(() {});
+                  },
+                ),
+              ],
+            )),
         content: Padding(
           padding: const EdgeInsets.only(bottom: 10.0, left: 10.0, right: 10.0),
           child: Row(
@@ -115,40 +127,48 @@ class _ImportPictureState extends State<ImportPicture> {
                         _dragging = false;
                       });
                     },
-                    child: ListView.builder(
-                        itemCount: GKernel.instance.multiDir.length + GKernel.instance.multiRaw.length,
-                        itemBuilder: (context, index) {
-                          final title = index >= GKernel.instance.multiDir.length
-                              ? GKernel.instance.multiRaw[index - GKernel.instance.multiDir.length]
-                              : GKernel.instance.multiDir[index];
-                          return ListTile(
-                            leading: index < GKernel.instance.multiDir.length
-                                ? const Icon(FluentIcons.fabric_folder)
-                                : SizedBox(
-                                    height: 24,
-                                    width: 24,
-                                    child: Image.file(
-                                      File(GKernel.instance.multiRaw[index - GKernel.instance.multiDir.length]),
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ),
-                            title: Text(
-                              path.basename(title),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            trailing: Button(
-                              child: const Text('取消'),
-                              onPressed: () {
-                                if (index >= GKernel.instance.multiDir.length) {
-                                  GKernel.instance.multiRaw.removeAt(index - GKernel.instance.multiDir.length);
-                                } else {
-                                  GKernel.instance.multiDir.removeAt(index);
-                                }
-                                setState(() {});
-                              },
-                            ),
-                          );
-                        }),
+                    child: GKernel.instance.multiDir.isEmpty && GKernel.instance.multiRaw.isEmpty
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(FluentIcons.add),
+                              Text('拖放来添加文件/文件夹'),
+                            ],
+                          )
+                        : ListView.builder(
+                            itemCount: GKernel.instance.multiDir.length + GKernel.instance.multiRaw.length,
+                            itemBuilder: (context, index) {
+                              final title = index >= GKernel.instance.multiDir.length
+                                  ? GKernel.instance.multiRaw[index - GKernel.instance.multiDir.length]
+                                  : GKernel.instance.multiDir[index];
+                              return ListTile(
+                                leading: index < GKernel.instance.multiDir.length
+                                    ? const Icon(FluentIcons.fabric_folder)
+                                    : SizedBox(
+                                        height: 24,
+                                        width: 24,
+                                        child: Image.file(
+                                          File(GKernel.instance.multiRaw[index - GKernel.instance.multiDir.length]),
+                                          fit: BoxFit.contain,
+                                        ),
+                                      ),
+                                title: Text(
+                                  path.basename(title),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                trailing: Button(
+                                  child: const Text('取消'),
+                                  onPressed: () {
+                                    if (index >= GKernel.instance.multiDir.length) {
+                                      GKernel.instance.multiRaw.removeAt(index - GKernel.instance.multiDir.length);
+                                    } else {
+                                      GKernel.instance.multiDir.removeAt(index);
+                                    }
+                                    setState(() {});
+                                  },
+                                ),
+                              );
+                            }),
                   ),
                 ),
               ),
