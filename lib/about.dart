@@ -97,7 +97,7 @@ class About extends StatelessWidget {
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    '你正在使用的是 SlopeCraft 的第四代版本，在开发时使用了 zlib 和 Eigen ，对上述库的开发者表示感谢。也感谢 Mojang ，整个软件就是为 Minecraft 而设计的。\nSlopeCraft 遵循 GPL-3.0 及以后版本 (GPL-3.0 or later) 协议开放源代码。',
+                    '你正在使用的是 SlopeCraft 的第四代版本，在开发时使用了 zlib 和 Eigen ，对上述库的开发者表示感谢。也感谢 Mojang ，整个软件就是为 Minecraft 而设计的。\nSlopeCraft 遵循 GPL-3.0 协议开放源代码。',
                     style: typography.body,
                   ),
                 ],
@@ -201,7 +201,6 @@ class About extends StatelessWidget {
                       child: const Text('联系作者'),
                       onPressed: () async {
                         launch('https://github.com/ToKiNoBug/SlopeCraft');
-                        launch('https://space.bilibili.com/351429231');
                       },
                     ),
                   ),

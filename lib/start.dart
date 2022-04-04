@@ -16,6 +16,42 @@ class _StartState extends State<Start> {
   @override
   Widget build(BuildContext context) {
     Typography typography = FluentTheme.of(context).typography;
+    if (GKernel.instance.founded == false) {
+      return ScaffoldPage(
+        header: const PageHeader(
+          title: Text('未找到资源文件'),
+        ),
+        content: Padding(
+          padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+          child: Card(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '请把下载压缩文件中的SCData文件夹和本程序放在同一个文件夹下执行',
+                    style: typography.display,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    '文件夹                    ',
+                    style: typography.bodyLarge,
+                  ),
+                  Text(
+                    '  ├─SCData           ',
+                    style: typography.bodyLarge,
+                  ),
+                  Text(
+                    '  └─SlopeCraft.exe',
+                    style: typography.bodyLarge,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     if (GKernel.instance.scl.SCL_queryStep() < step.colorSetReady) {
       return ScaffoldPage(
         header: const PageHeader(
@@ -58,6 +94,7 @@ class _StartState extends State<Start> {
         ),
       );
     }
+
     return ScaffoldPage(
       header: PageHeader(
         title: const Text('开始'),

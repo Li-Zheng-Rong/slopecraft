@@ -63,13 +63,13 @@ IDI_APP_ICON            ICON                    "resources\\app_icon.ico"
 #ifdef FLUTTER_BUILD_NUMBER
 #define VERSION_AS_NUMBER FLUTTER_BUILD_NUMBER
 #else
-#define VERSION_AS_NUMBER 1,0,0
+#define VERSION_AS_NUMBER 4,0,0
 #endif
 
 #ifdef FLUTTER_BUILD_NAME
 #define VERSION_AS_STRING #FLUTTER_BUILD_NAME
 #else
-#define VERSION_AS_STRING "1.0.0"
+#define VERSION_AS_STRING "4.0.0"
 #endif
 
 VS_VERSION_INFO VERSIONINFO
@@ -88,14 +88,13 @@ BEGIN
     BLOCK "StringFileInfo"
     BEGIN
         BLOCK "040904e4"
-        BEGIN
-            VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "slopecraft" "\0"
+        BEGIN		
+            VALUE "FileDescription", "MC Map Pixel Tool" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "slopecraft" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2022 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "slopecraft.exe" "\0"
-            VALUE "ProductName", "slopecraft" "\0"
+            VALUE "InternalName", "SlopeCraft" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2021-2022 TokiNoBug and PopChrono. All rights reserved." "\0"
+            VALUE "OriginalFilename", "SlopeCraft.exe" "\0"
+            VALUE "ProductName", "SlopeCraft" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

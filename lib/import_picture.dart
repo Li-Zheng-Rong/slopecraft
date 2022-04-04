@@ -36,13 +36,6 @@ class _ImportPictureState extends State<ImportPicture> {
     // '自定义',
   ];
   bool _dragging = false;
-  final flyoutController = FlyoutController();
-  @override
-  void dispose() {
-    // Dispose the controller to free up resources
-    flyoutController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -197,13 +190,8 @@ class _ImportPictureState extends State<ImportPicture> {
                             ),
                             const SizedBox(height: 10.0),
                             Text(
-                              '图片的长宽（以像素为单位）最好不要超过512，不然后续转换可能较慢。',
+                              '图像的每一个像素都与MC中一个方块对应，图像的尺寸就是地图和的长宽。”你可以使用任意尺寸的图像，但不得小于16*16像素。',
                               style: typography.bodyLarge,
-                            ),
-                            const SizedBox(height: 10.0),
-                            Text(
-                              '图像的每一个像素都与Minecraft中的一个方块对应，图像的长宽就是像素画的长宽。每张地图的分辨率为128x128。对于大图片而不想损失分辨率，可以分割为多张128x128的小图片再批量转换。',
-                              style: typography.bodyStrong,
                             ),
                             const SizedBox(height: 10.0),
                             Text(
@@ -640,13 +628,8 @@ class _ImportPictureState extends State<ImportPicture> {
                             ),
                             const SizedBox(height: 10.0),
                             Text(
-                              '图片的长宽（以像素为单位）最好不要超过512，不然后续转换可能较慢。',
+                              '图像的每一个像素都与MC中一个方块对应，图像的尺寸就是地图和的长宽。”你可以使用任意尺寸的图像，但不得小于16*16像素。',
                               style: typography.bodyLarge,
-                            ),
-                            const SizedBox(height: 10.0),
-                            Text(
-                              '图像的每一个像素都与Minecraft中的一个方块对应，图像的长宽就是像素画的长宽。如果你想制作大型的纯文件像素画，可以将图片分割为多张128x128的小图片再使用批量转换。',
-                              style: typography.bodyStrong,
                             ),
                             const SizedBox(height: 10.0),
                             Text(

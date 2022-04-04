@@ -96,89 +96,104 @@ void main(List<String> args) async {
     });
   }
   //create kernel
-  await GKernel.instance.loadColorSet(path.join(GKernel.instance.current, dataPrefix));
-  for (int i = 0; i < 8; i++) {
-    await GKernel.instance.loadColorSetCPU(path.join(GKernel.instance.current, dataPrefix), i);
-  }
-  File fb = File(path.join(GKernel.instance.current, dataPrefix, 'Blocks.json'));
-  await fb.readAsString().then((value) {
-    GKernel.instance.blockListManager.importBlocks(value);
-    GKernel.instance.blockListManager.uesPreset(blocklists[2].set);
-  });
-  GKernel.instance.blockListManager.loadTexture(folderPath: path.join(GKernel.instance.current, dataPrefix, 'Texture'));
-  GKernel.instance.blockListManager.select(baseColor: 0, block: GKernel.instance.blockListManager.blocks[0]![0]);
-
-  if (DateTime.now().month == DateTime.april && DateTime.now().day == 1) {
-    Random random = Random(DateTime.now().millisecondsSinceEpoch);
-    if (random.nextInt(3) == 0) {
-      Timer(const Duration(seconds: 10), () {
-        // Allocate 8KB, which is more than enough space for the dialog in memory.
-        final ptr = ffi.calloc<Uint16>(4096);
-        var idx = 0;
-        Pointer<RECT> rect = ffi.calloc.call();
-        GetWindowRect(hInstance, rect);
-
-        idx += ptr.elementAt(idx).cast<DLGTEMPLATE>().setDialog(
-            style: WS_POPUP | WS_BORDER | WS_SYSMENU | DS_MODALFRAME | DS_SETFONT | WS_CAPTION,
-            title: 'SlopeCraft Compile time error',
-            cdit: 4,
-            cx: 360,
-            cy: 80,
-            x: (GetSystemMetrics(SM_CXSCREEN) ~/ 2 - (rect.ref.right - rect.ref.left)) ~/ 2,
-            y: (GetSystemMetrics(SM_CYSCREEN) ~/ 2 - (rect.ref.bottom - rect.ref.top)) ~/ 2,
-            fontName: 'MS Shell Dlg',
-            fontSize: 8);
-        idx += ptr.elementAt(idx).cast<DLGITEMTEMPLATE>().setDialogItem(
-            style: WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_DEFPUSHBUTTON,
-            x: 80,
-            y: 60,
-            cx: 50,
-            cy: 14,
-            id: IDOK,
-            windowSystemClass: 0x0080, // button
-            text: 'ReportErr');
-        idx += ptr.elementAt(idx).cast<DLGITEMTEMPLATE>().setDialogItem(
-            style: WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON,
-            x: 145,
-            y: 60,
-            cx: 50,
-            cy: 14,
-            id: IDCONTINUE,
-            windowSystemClass: 0x0080, // button
-            text: 'OK');
-        idx += ptr.elementAt(idx).cast<DLGITEMTEMPLATE>().setDialogItem(
-            style: WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON,
-            x: 210,
-            y: 60,
-            cx: 50,
-            cy: 14,
-            id: IDCANCEL,
-            windowSystemClass: 0x0080, // button
-            text: 'Exit');
-        idx += ptr.elementAt(idx).cast<DLGITEMTEMPLATE>().setDialogItem(
-            style: WS_CHILD | WS_VISIBLE,
-            x: 30,
-            y: 10,
-            cx: 350,
-            cy: 40,
-            id: ID_TEXT,
-            windowSystemClass: 0x0082, // static
-            text:
-                'Cannot find handx128.dll: Hardware not invented.\n\nSLOPECRAFT_FAILED_TO HAVE_A_HANDSHAKE_WITH_YOU\nHAVE_A_NICE_DAY_DONT_REPORT_THIS_AS_AN_ERROR_ITS_JUST_A_JOKE.');
-
-        final lpDialogFunc = Pointer.fromFunction<DlgProc>(dialogReturnProc, 0);
-
-        final nResult = DialogBoxIndirectParam(hInstance, ptr.cast<DLGTEMPLATE>(), NULL, lpDialogFunc, 0);
-
-        if (nResult == IDOK) {
-          launch('https://github.com/ToKiNoBug/SlopeCraft/issues');
-        }
-        free(ptr);
-      });
+  Directory dir = Directory('SCData');
+  if (dir.existsSync() && dir.statSync().type == FileSystemEntityType.directory) {
+    GKernel.instance.founded = true;
+    await GKernel.instance.loadColorSet(path.join(GKernel.instance.current, dataPrefix));
+    for (int i = 0; i < 8; i++) {
+      await GKernel.instance.loadColorSetCPU(path.join(GKernel.instance.current, dataPrefix), i);
     }
+    File fb = File(path.join(GKernel.instance.current, dataPrefix, 'Blocks.json'));
+    await fb.readAsString().then((value) {
+      GKernel.instance.blockListManager.importBlocks(value);
+      GKernel.instance.blockListManager.uesPreset(blocklists[2].set);
+    });
+    GKernel.instance.blockListManager.loadTexture(folderPath: path.join(GKernel.instance.current, dataPrefix, 'Texture'));
+    GKernel.instance.blockListManager.select(baseColor: 0, block: GKernel.instance.blockListManager.blocks[0]![0]);
+
+    File file = File('.SlopeCraft');
+    if (!file.existsSync()) {
+      file.createSync();
+      Random random = Random(DateTime.now().millisecondsSinceEpoch);
+      int s = random.nextInt(2);
+      if (s == 0) {
+        Timer(const Duration(seconds: 5), () {
+          // Allocate 8KB, which is more than enough space for the dialog in memory.
+          final ptr = ffi.calloc<Uint16>(4096);
+          var idx = 0;
+          Pointer<RECT> rect = ffi.calloc.call();
+          GetWindowRect(hInstance, rect);
+
+          idx += ptr.elementAt(idx).cast<DLGTEMPLATE>().setDialog(
+              style: WS_POPUP | WS_BORDER | WS_SYSMENU | DS_MODALFRAME | DS_SETFONT | WS_CAPTION,
+              title: 'SlopeCraft Compile time error',
+              cdit: 4,
+              cx: 360,
+              cy: 80,
+              x: (GetSystemMetrics(SM_CXSCREEN) ~/ 2 - (rect.ref.right - rect.ref.left)) ~/ 2,
+              y: (GetSystemMetrics(SM_CYSCREEN) ~/ 2 - (rect.ref.bottom - rect.ref.top)) ~/ 2,
+              fontName: 'MS Shell Dlg',
+              fontSize: 8);
+          idx += ptr.elementAt(idx).cast<DLGITEMTEMPLATE>().setDialogItem(
+              style: WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_DEFPUSHBUTTON,
+              x: 80,
+              y: 60,
+              cx: 50,
+              cy: 14,
+              id: IDOK,
+              windowSystemClass: 0x0080, // button
+              text: 'ReportErr');
+          idx += ptr.elementAt(idx).cast<DLGITEMTEMPLATE>().setDialogItem(
+              style: WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON,
+              x: 145,
+              y: 60,
+              cx: 50,
+              cy: 14,
+              id: IDCONTINUE,
+              windowSystemClass: 0x0080, // button
+              text: 'OK');
+          idx += ptr.elementAt(idx).cast<DLGITEMTEMPLATE>().setDialogItem(
+              style: WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON,
+              x: 210,
+              y: 60,
+              cx: 50,
+              cy: 14,
+              id: IDCANCEL,
+              windowSystemClass: 0x0080, // button
+              text: 'Exit');
+          idx += ptr.elementAt(idx).cast<DLGITEMTEMPLATE>().setDialogItem(
+              style: WS_CHILD | WS_VISIBLE,
+              x: 30,
+              y: 10,
+              cx: 350,
+              cy: 40,
+              id: ID_TEXT,
+              windowSystemClass: 0x0082, // static
+              text:
+                  'Cannot find handx128.dll: Hardware not invented.\n\nSLOPECRAFT_FAILED_TO HAVE_A_HANDSHAKE_WITH_YOU\nHAVE_A_NICE_DAY_DONT_REPORT_THIS_AS_AN_ERROR_ITS_JUST_A_JOKE.');
+
+          final lpDialogFunc = Pointer.fromFunction<DlgProc>(dialogReturnProc, 0);
+          SetWindowPos(
+              idx,
+              HWND_TOPMOST,
+              (GetSystemMetrics(SM_CXSCREEN) ~/ 2 - (rect.ref.right - rect.ref.left)) ~/ 2,
+              (GetSystemMetrics(SM_CYSCREEN) ~/ 2 - (rect.ref.bottom - rect.ref.top)) ~/ 2,
+              360,
+              80,
+              SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+          final nResult = DialogBoxIndirectParam(hInstance, ptr.cast<DLGTEMPLATE>(), NULL, lpDialogFunc, 0);
+
+          if (nResult == IDOK) {
+            launch('https://github.com/ToKiNoBug/SlopeCraft/issues');
+          }
+          free(ptr);
+        });
+      }
+    }
+
+    tp.Executor().warmUp(isolatesCount: 8);
   }
 
-  tp.Executor().warmUp(isolatesCount: 8);
   runApp(const MyApp());
 }
 
@@ -273,7 +288,7 @@ class _MyHomePageState extends State<MyHomePage> {
               height: kOneLineTileHeight,
               padding: const EdgeInsets.symmetric(horizontal: 10.0),
               child: Center(
-                child: Text('SlopeCraft BETA', style: typography.title),
+                child: Text('SlopeCraft 4', style: typography.title),
               ),
             ),
             items: [

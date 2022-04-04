@@ -429,6 +429,7 @@ class GKernel {
   }
 
   factory GKernel() => getInstance();
+  bool founded = false;
   bool multiMode = false;
   List<String> multiRaw = [];
   String current = path.current;

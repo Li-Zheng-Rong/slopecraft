@@ -244,7 +244,7 @@ class _ConvertMapState extends State<ConvertMap> {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     Text(
-                                      '第三步，调整颜色。由于地图只有256种颜色，必须调整图片的颜色为这256种之一。',
+                                      '第三步，调整颜色。地图可用的颜色很有限，必须将原图中像素调整为地图可用的颜色',
                                       style: typography.bodyLarge,
                                     ),
                                     const SizedBox(height: 5.0),
@@ -516,7 +516,7 @@ class _ConvertMapState extends State<ConvertMap> {
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
                                   Text(
-                                    '第三步，调整颜色。由于地图只有256种颜色，必须调整图片的颜色为这256种之一。',
+                                    '第三步，调整颜色。地图可用的颜色很有限，必须将原图中像素调整为地图可用的颜色',
                                     style: typography.bodyLarge,
                                   ),
                                   const SizedBox(height: 5.0),

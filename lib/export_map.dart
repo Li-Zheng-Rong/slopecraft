@@ -103,8 +103,8 @@ class _ExportMapState extends State<ExportMap> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text('地图文件的文件名形如map_3.dat，是Minecraft用于存储地图内容的文件。其中3表示地图文件的序号,地图的序号从0开始。', style: typography.bodyLarge),
-                      Text('地图文件存储于存档中的data文件夹下，你需要一定的权限才能修改它们。如果你既不是单机游戏，又不是服主，那你应该选择导出为投影，而不是地图文件。', style: typography.bodyLarge),
-                      Text('每张地图只能显示128×128的画面，大图片可能会有多个地图，对应多个地图文件。它们会占用连续的一段序号。', style: typography.bodyLarge),
+                      Text('纯文件地图画需要替换/增加地图文件，这一步本质上是在修改存档。地图文件存储在存档中的data文件夹下。如果你既不是单机游戏，又没有修改存档的权限，那么不能使用纯文件地图画。', style: typography.bodyLarge),
+                      Text('每张地图只能显示128×128的画面，大图片可能会有多个地图，对应多个地图文件。它们会占用连续的一段序号。（按列优先）', style: typography.bodyLarge),
                       Text('例如，你可以使用/give @s filled_map{map:3}来获得map_3.dat的地图。', style: typography.bodyLarge),
                       Text('1.12版请使用/give @p filled_map 1 3', style: typography.bodyLarge),
                       Text('这种方法适合以最高画质展示大图片。', style: typography.bodyLarge),
@@ -382,8 +382,8 @@ class _ExportMapState extends State<ExportMap> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text('地图文件的文件名形如map_3.dat，是minecraft用于存储地图内容的文件。其中3表示地图文件的序号,地图的序号从0开始。', style: typography.body),
-                    Text('地图文件存储于存档中的data文件夹下，你需要一定的权限才能修改它们。如果你既不是单机游戏，又不是服主，那你应该选择导出为投影，而不是地图文件。', style: typography.body),
-                    Text('每张地图只能显示128×128的画面，大图片可能会有多个地图，对应多个地图文件。它们会占用连续的一段序号。', style: typography.body),
+                    Text('纯文件地图画需要替换/增加地图文件，这一步本质上是在修改存档。地图文件存储在存档中的data文件夹下。如果你既不是单机游戏，又没有修改存档的权限，那么不能使用纯文件地图画。', style: typography.body),
+                    Text('每张地图只能显示128×128的画面，大图片可能会有多个地图，对应多个地图文件。它们会占用连续的一段序号。（按列优先）', style: typography.body),
                     Text('例如，你可以使用/give @s filled_map{map:3}来获得map_3.dat的地图。', style: typography.body),
                     Text('1.12版请使用/give @p filled_map 1 3', style: typography.body),
                     Text('这种方法适合以最高画质展示大图片。', style: typography.body),
