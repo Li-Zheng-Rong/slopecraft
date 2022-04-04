@@ -312,11 +312,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 icon: const Icon(FluentIcons.view_in_a_r),
                 title: const Text('导出'),
               ),
-              PaneItemSeparator(),
-              PaneItem(
-                icon: const Icon(FluentIcons.toolbox),
-                title: const Text('图像工具'),
-              ),
+              // PaneItemSeparator(),
+              // PaneItem(
+              //   icon: const Icon(FluentIcons.toolbox),
+              //   title: const Text('图像工具'),
+              // ),
             ],
             footerItems: [
               PaneItemSeparator(),

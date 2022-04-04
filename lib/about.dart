@@ -200,17 +200,16 @@ class About extends StatelessWidget {
                     child: Button(
                       child: const Text('联系作者'),
                       onPressed: () async {
-                        launch('https://github.com/ToKiNoBug/SlopeCraft');
+                        launch('https://github.com/ToKiNoBug/SlopeCraft/issues');
                       },
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Button(
-                      child: const Text('退出'),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        windowManager.destroy();
+                      child: const Text('检查更新'),
+                      onPressed: () async {
+                        launch('https://github.com/ToKiNoBug/SlopeCraft/releases');
                       },
                     ),
                   ),
