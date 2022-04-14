@@ -15,7 +15,7 @@ import 'blockmanager.dart';
 import 'count_convert.dart';
 import 'scl_interface.dart';
 
-const String dataPrefix = 'SCData';
+const String dataPrefix = 'data';
 
 class ExportMultiArgs {
   ExportMultiArgs(
@@ -619,7 +619,7 @@ class GKernel {
       ab.elementAt(i).value = scl.SCL_createBlock();
       scl.SCL_setId(ab.elementAt(i).value, b.id.toNativeUtf8().cast());
       scl.SCL_setVersion(ab.elementAt(i).value, b.version);
-      scl.SCL_setIdOld(ab.elementAt(i).value, (b.idOld ?? '').toNativeUtf8().cast());
+      scl.SCL_setIdOld(ab.elementAt(i).value, ((b.idOld == null || b.idOld!.isEmpty) ? b.id : b.idOld)!.toNativeUtf8().cast());
       scl.SCL_setNeedGlass(ab.elementAt(i).value, b.needGlass ?? false);
       scl.SCL_setDoGlow(ab.elementAt(i).value, b.isGlowing ?? false);
       scl.SCL_setEndermanPickable(ab.elementAt(i).value, b.endermanPickable ?? false);
@@ -993,7 +993,7 @@ class GKernel {
             if (['.png', '.bmp', '.jpeg', '.jpg', '.tga', '.webp', '.tiff'].contains(path.extension(item))) {
               var v = picture.readAsBytesSync();
               List<int> f = v;
-              var p = img.decodeNamedImage(f, path.extension(item));
+              var p = img.decodeImage(f);
 
               if (p != null) {
                 if (p.height < 16 || p.width < 16) {
@@ -1066,8 +1066,7 @@ class GKernel {
       picture,
       fit: BoxFit.contain,
     );
-    rawImage = img.decodeNamedImage(f, path.extension(picture.path));
-
+    rawImage = img.decodeImage(f);
     await setRawImage(context, false);
   }
 }
@@ -1085,7 +1084,7 @@ ExportMultiReturn exportMulti(ExportMultiArgs args) {
   pictureC = File(args.p);
 
   List<int> f = pictureC.readAsBytesSync();
-  multiRawCache = img.decodeNamedImage(f, path.extension(pictureC.path));
+  multiRawCache = img.decodeImage(f);
   //setRawImage
   if (multiRawCache == null) {
     return ExportMultiReturn(s: false, p: args.p);
@@ -1220,7 +1219,7 @@ ExportMultiReturn exportMultiSingle(ExportMultiArgs args) {
   pictureC = File(args.p);
 
   List<int> f = pictureC.readAsBytesSync();
-  multiRawCache = img.decodeNamedImage(f, path.extension(pictureC.path));
+  multiRawCache = img.decodeImage(f);
   //setRawImage
   if (multiRawCache == null) {
     return ExportMultiReturn(s: false, p: args.p);
@@ -1349,7 +1348,7 @@ Future<void> export(int i, int cpuid) async {
     String p =
         i >= GKernel.instance.multiDirFiles.length ? GKernel.instance.multiRaw[i - GKernel.instance.multiDirFiles.length] : GKernel.instance.multiDirFiles[i];
     List<int> f = File(p).readAsBytesSync();
-    img.Image? r = img.decodeNamedImage(f, path.extension(p));
+    img.Image? r = img.decodeImage(f);
     if (r != null) {
       hei = (r.height / 128).ceil();
       wid = (r.width / 128).ceil();

@@ -106,8 +106,7 @@ class About extends StatelessWidget {
             const SizedBox(height: 10),
             Expanded(
               child: Card(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: ListView(
                   children: [
                     Text(
                       '窗口效果',
@@ -126,8 +125,21 @@ class About extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     RadioButton(
+                      checked: appTheme.windowEffect == WindowEffect.solid,
+                      onChanged: isWindowsVersionOrGreater(10, 0, 22000)
+                          ? (val) {
+                              if (val) {
+                                appTheme.windowEffect = WindowEffect.solid;
+                                appTheme.setEffect(WindowEffect.solid, context);
+                              }
+                            }
+                          : null,
+                      content: const Text('Solid      (Windows 11)'),
+                    ),
+                    const SizedBox(height: 8),
+                    RadioButton(
                       checked: appTheme.windowEffect == WindowEffect.acrylic,
-                      onChanged: GKernel.instance.osversion == OSVersion.win11
+                      onChanged: isWindowsVersionOrGreater(10, 0, 22000)
                           ? (val) {
                               if (val) {
                                 appTheme.windowEffect = WindowEffect.acrylic;
@@ -140,7 +152,7 @@ class About extends StatelessWidget {
                     const SizedBox(height: 8),
                     RadioButton(
                       checked: appTheme.windowEffect == WindowEffect.mica,
-                      onChanged: GKernel.instance.osversion == OSVersion.win11
+                      onChanged: isWindowsVersionOrGreater(10, 0, 22000)
                           ? (val) {
                               if (val) {
                                 appTheme.windowEffect = WindowEffect.mica;
@@ -153,7 +165,7 @@ class About extends StatelessWidget {
                     const SizedBox(height: 8),
                     RadioButton(
                       checked: appTheme.windowEffect == WindowEffect.tabbed,
-                      onChanged: GKernel.instance.osversion == OSVersion.win11
+                      onChanged: isWindowsVersionOrGreater(10, 0, 22523)
                           ? (val) {
                               if (val) {
                                 appTheme.windowEffect = WindowEffect.tabbed;
@@ -161,32 +173,32 @@ class About extends StatelessWidget {
                               }
                             }
                           : null,
-                      content: const Text('Tabbed  (Windows 11)'),
+                      content: const Text('Tabbed  (Windows 11 22523)'),
                     ),
-                    const SizedBox(height: 8),
-                    RadioButton(
-                      checked: appTheme.windowEffect == WindowEffect.aero,
-                      onChanged: GKernel.instance.osversion == OSVersion.win7
-                          ? (val) {
-                              if (val) {
-                                appTheme.windowEffect = WindowEffect.aero;
-                                appTheme.setEffect(WindowEffect.aero, context);
-                              }
-                            }
-                          : null,
-                      content: const Text('Aero      (Windows 7) 可能无效'),
-                    ),
-                    const SizedBox(height: 8),
-                    RadioButton(
-                      checked: appTheme.windowEffect == WindowEffect.transparent,
-                      onChanged: (val) {
-                        if (val) {
-                          appTheme.windowEffect = WindowEffect.transparent;
-                          appTheme.setEffect(WindowEffect.transparent, context);
-                        }
-                      },
-                      content: const Text('Transparent'),
-                    ),
+                    // const SizedBox(height: 8),
+                    // RadioButton(
+                    //   checked: appTheme.windowEffect == WindowEffect.aero,
+                    //   onChanged: GKernel.instance.osversion == OSVersion.win7
+                    //       ? (val) {
+                    //           if (val) {
+                    //             appTheme.windowEffect = WindowEffect.aero;
+                    //             appTheme.setEffect(WindowEffect.aero, context);
+                    //           }
+                    //         }
+                    //       : null,
+                    //   content: const Text('Aero      (Windows 7) 可能无效'),
+                    // ),
+                    // const SizedBox(height: 8),
+                    // RadioButton(
+                    //   checked: appTheme.windowEffect == WindowEffect.transparent,
+                    //   onChanged: (val) {
+                    //     if (val) {
+                    //       appTheme.windowEffect = WindowEffect.transparent;
+                    //       appTheme.setEffect(WindowEffect.transparent, context);
+                    //     }
+                    //   },
+                    //   content: const Text('Transparent'),
+                    // ),
                   ],
                 ),
               ),

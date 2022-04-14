@@ -69,7 +69,7 @@ void main(List<String> args) async {
   if (isDesktop) {
     await windowManager.ensureInitialized();
 
-    if (isWindowsVersionOrGreater(10, 0, 22000)) {
+    if (isWindowsVersionOrGreater(10, 0, 22001)) {
       GKernel.instance.osversion = OSVersion.win11;
     } else if (IsWindows10OrGreater() == 1) {
       GKernel.instance.osversion = OSVersion.win10;
@@ -79,13 +79,6 @@ void main(List<String> args) async {
 
     windowManager.waitUntilReadyToShow().then((_) async {
       await flutter_acrylic.Window.initialize();
-      if (GKernel.instance.osversion == OSVersion.win11) {
-        await flutter_acrylic.Window.setEffect(effect: flutter_acrylic.WindowEffect.acrylic, dark: await SystemTheme.darkMode);
-      } else if (GKernel.instance.osversion == OSVersion.win10) {
-        await flutter_acrylic.Window.setEffect(effect: flutter_acrylic.WindowEffect.disabled, dark: await SystemTheme.darkMode);
-      } else {
-        await flutter_acrylic.Window.setEffect(effect: flutter_acrylic.WindowEffect.aero, dark: await SystemTheme.darkMode);
-      }
       // await windowManager.setTitleBarStyle(TitleBarStyle.hidden, windowButtonVisibility: false);
       await windowManager.setSize(const Size(1000, 610));
       await windowManager.setMinimumSize(const Size(1000, 610));
@@ -93,10 +86,15 @@ void main(List<String> args) async {
       // await windowManager.setPreventClose(true);
       await windowManager.setSkipTaskbar(false);
       await windowManager.show();
+      // if (GKernel.instance.osversion == OSVersion.win11) {
+      //   await flutter_acrylic.Window.setEffect(effect: flutter_acrylic.WindowEffect.acrylic, dark: await SystemTheme.darkMode);
+      // } else {
+      //   await flutter_acrylic.Window.setEffect(effect: flutter_acrylic.WindowEffect.disabled, dark: await SystemTheme.darkMode);
+      // }
     });
   }
   //create kernel
-  Directory dir = Directory('SCData');
+  Directory dir = Directory(dataPrefix);
   if (dir.existsSync() && dir.statSync().type == FileSystemEntityType.directory) {
     GKernel.instance.founded = true;
     await GKernel.instance.loadColorSet(path.join(GKernel.instance.current, dataPrefix));
@@ -111,7 +109,7 @@ void main(List<String> args) async {
     GKernel.instance.blockListManager.loadTexture(folderPath: path.join(GKernel.instance.current, dataPrefix, 'Texture'));
     GKernel.instance.blockListManager.select(baseColor: 0, block: GKernel.instance.blockListManager.blocks[0]![0]);
 
-    File file = File('.SlopeCraft');
+    File file = File(path.join(dataPrefix, '.SlopeCraft'));
     if (!file.existsSync()) {
       file.createSync();
       Random random = Random(DateTime.now().millisecondsSinceEpoch);
@@ -229,6 +227,7 @@ class MyApp extends StatelessWidget {
             ),
           ),
           builder: (context, child) {
+            appTheme.setEffect(appTheme.windowEffect, context);
             return Directionality(
               textDirection: appTheme.textDirection,
               child: NavigationPaneTheme(
@@ -337,7 +336,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ImportPicture(),
               ConvertMap(),
               Export(),
-              CutTool(),
+              // CutTool(),
               About(),
             ],
           ),

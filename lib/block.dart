@@ -35,7 +35,7 @@ class Block {
   bool? wallUseable;
   @JsonKey(defaultValue: false)
   bool? endermanPickable;
-  @JsonKey(defaultValue: '')
+  @JsonKey(defaultValue: null)
   String? idOld;
 
   factory Block.fromJson(Map<String, dynamic> json) => _$BlockFromJson(json);

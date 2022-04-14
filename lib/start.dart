@@ -29,21 +29,8 @@ class _StartState extends State<Start> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    '请把下载压缩文件中的SCData文件夹和本程序放在同一个文件夹下执行',
+                    '请不要通过快捷方式启动',
                     style: typography.display,
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    '文件夹                    ',
-                    style: typography.bodyLarge,
-                  ),
-                  Text(
-                    '  ├─SCData           ',
-                    style: typography.bodyLarge,
-                  ),
-                  Text(
-                    '  └─SlopeCraft.exe',
-                    style: typography.bodyLarge,
                   ),
                 ],
               ),
@@ -126,7 +113,8 @@ class _StartState extends State<Start> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    'SlopeCraft ${GKernel.instance.scl.SCL_getSCLVersion().cast<ffi.Utf8>().toDartString()}',
+                    // 'SlopeCraft ${GKernel.instance.scl.SCL_getSCLVersion().cast<ffi.Utf8>().toDartString()}',
+                    'SlopeCraft 4.0.1',
                     style: typography.display,
                     textAlign: TextAlign.center,
                   ),

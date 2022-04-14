@@ -164,7 +164,7 @@ class _ExportMapState extends State<ExportMap> {
                                             if (GKernel.instance.exportType == ExportType.file) {
                                               String p = GKernel.instance.multiRaw[i];
                                               List<int> f = File(p).readAsBytesSync();
-                                              img.Image? r = img.decodeNamedImage(f, path.extension(p));
+                                              img.Image? r = img.decodeImage(f);
                                               if (r != null) {
                                                 hei = (r.height / 128).ceil();
                                                 wid = (r.width / 128).ceil();
@@ -213,7 +213,7 @@ class _ExportMapState extends State<ExportMap> {
                                                 if (GKernel.instance.exportType == ExportType.file) {
                                                   String p = entity.path;
                                                   List<int> f = File(p).readAsBytesSync();
-                                                  img.Image? r = img.decodeNamedImage(f, path.extension(p));
+                                                  img.Image? r = img.decodeImage(f);
                                                   if (r != null) {
                                                     hei = (r.height / 128).ceil();
                                                     wid = (r.width / 128).ceil();
